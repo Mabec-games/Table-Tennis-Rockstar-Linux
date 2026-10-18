@@ -67,6 +67,45 @@ editing the user's installed SDK.
 
 ## Verification
 
+### v1.0.4 first-run save-dialog regression
+
+Reproduced the reported endless loading screen with an empty, isolated user-data
+folder: the guest was still running and playing music, but was waiting at
+**Saved Game / No saved game data found**. The foreground loading overlay hid
+that question and the synthetic Start mapping consumed the A/B choices.
+
+The intro helper now recognizes a separate message-dialog movie advanced by the
+retail dialog update call site `0x822EB0B4`, after the frontend movie exists. It
+pauses the loading overlay and synthetic Start input, preserving the normal
+choice to create a save or continue without saving. The skip button must be
+released before input reaches that question. Releasing a dialog confirmation is
+also required before it can select a main-menu item. Existing save files are not
+modified by this transition logic.
+
+Private diagnostic input replay and visual checks covered:
+
+- Short skip press before guest input polling, with no pre-existing save: the
+  save question becomes visible instead of an endless loading screen.
+- Create save with A, acknowledge the next screen with A held: a save is written
+  only under the isolated test profile, and the main menu appears without
+  accidentally selecting Tournament.
+- Restart using that new save: the main menu is reached without a manual Start.
+- Continue without saving with B: the main menu appears and no save directory
+  is created for that isolated profile.
+- Let the entire intro play, then press Start: the first-run question is visible;
+  continuing without saving reaches the main menu, and D-pad navigation selects
+  Exhibition normally.
+
+The replay used a private virtual skip event and simulated XInput-state buttons;
+it was not a new physical-controller test. No replay controls, private paths or
+diagnostic instrumentation are included in the public source payload. The normal
+production source was restored in the test build after these checks.
+
+Manual regression: launch a local build with a new, empty `--user_data_root`,
+skip with a short gamepad press, release it, then test A/create and B/no-save in
+separate profiles. Also repeat with an existing save and with the full intro.
+Use isolated folders; do not delete real saves to create this test condition.
+
 ### v1.0.3 ISO startup regression
 
 The earlier installed-SDK validation missed a local modification to the SDK's

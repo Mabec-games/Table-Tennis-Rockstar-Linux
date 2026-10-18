@@ -9,7 +9,7 @@
 
 namespace tabletennis::intro {
 namespace {
-enum class Phase { Watching, Skipping, Drain, Done };
+enum class Phase { Watching, Skipping, Prompt, Drain, Done };
 std::atomic<Phase> phase{Phase::Watching};
 std::atomic<bool> frontend_started{false};
 std::atomic<uint32_t> frontend_movie{0};
@@ -154,6 +154,20 @@ bool FrontendReady(PPCContext& ctx, uint8_t* base, uint32_t movie) {
 bool AdvanceFrontendMovie(PPCContext& ctx, uint8_t* base) {
   static thread_local bool advancing = false;
   const auto movie = ctx.r3.u32;
+  // The retail message-dialog update advances its own movie from this call
+  // site. First-time save creation (and other startup questions) must remain
+  // visible and receive real input instead of our repeated Start presses.
+  // This address belongs to the exact retail executable validated at setup.
+  constexpr uint32_t kMessageDialogAdvance = 0x822EB0B4;
+  if (!advancing && movie && frontend_started.load() && frontend_movie.load() &&
+      movie != frontend_movie.load() && static_cast<uint32_t>(ctx.lr) == kMessageDialogAdvance) {
+    auto expected = Phase::Skipping;
+    if (phase.compare_exchange_strong(expected, Phase::Prompt)) {
+      for (auto& value : released) value.store(false);
+      REXLOG_INFO("Tabletennis: Startup dialog needs a choice; loading overlay and automatic Start paused");
+    }
+    return false;
+  }
   if (advancing || phase.load() != Phase::Skipping || !movie ||
       movie != frontend_movie.load()) return false;
   const auto rate = REX_LOAD_U16(REX_LOAD_U32(movie + 24) + 44);
@@ -194,7 +208,7 @@ void FilterInput(PPCContext& ctx, uint8_t* base, uint32_t user, uint32_t state) 
     REX_STORE_U32(state + 8, 0);
     REX_STORE_U32(state + 12, 0);
 
-  } else if (current == Phase::Drain) {
+  } else if (current == Phase::Prompt || current == Phase::Drain) {
     // Resume each controller only after its startup button has been released.
     // A held A must not select Tournament when the main menu appears.
     if (!released[user].load()) {
@@ -224,6 +238,7 @@ void ObserveFrontend(PPCContext& ctx, uint8_t* base) {
     REXLOG_INFO("Tabletennis: Startup Flash state {}", value);
   }
   if (value == 3 && FrontendReady(ctx, base, movie)) {
+    for (auto& released_button : released) released_button.store(false);
     if (phase.exchange(Phase::Drain) == Phase::Watching) phase.store(Phase::Done);
     REXLOG_INFO("Tabletennis: Main menu reached; intro-skip input mapping finished");
   }

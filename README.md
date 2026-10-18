@@ -6,9 +6,11 @@ Build and play from **your own Xbox 360 disc image**. A graphical installer prep
 
 ## Get started
 
-1. Download **[Install-Table-Tennis.exe — installer preview](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC/releases/download/v1.0.3/Install-Table-Tennis.exe)**.
+1. Download **[Install-Table-Tennis.exe — installer preview](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC/releases/download/v1.0.4/Install-Table-Tennis.exe)**.
 2. Open it, choose your retail **Table Tennis ISO**, allow the required components, and click **Install**.
 3. When it says **Ready to play**, click **Play**. A desktop shortcut is also created when Windows permits it.
+
+On the first launch, **Saved Game** may ask whether to create a save. Choose **A** to create one or **B** to continue without saving, then follow any further on-screen confirmation. This question is now visible and interactive during intro skipping.
 
 **You do not need to install Python, compilers or SDKs manually. You do not need a command prompt or the source ZIP.**
 
@@ -64,13 +66,15 @@ Pick the resolution and framerate combination that suits your GPU and monitor. A
 
 ## If installation stops
 
-**Already installed, but starting the game says `--game_data_root does not exist` even though your ISO exists?** Versions 1.0.1/1.0.2 could build with the SDK's directory-only startup code. Download the **v1.0.3 installer** above, choose your ISO and the **same installation folder**, then run Install / Recheck to rebuild with ISO support. You do not need to delete your installation. Start through **tabletennis_launcher.exe** afterward; the ISO must remain available.
+**Music plays but `LOADING MAIN MENU...` never disappears?** In v1.0.3 and earlier, the loading overlay could hide the first-run save question and block the controls needed to answer it. Download the **v1.0.4 installer**, choose the same ISO and installation folder, and rebuild. Your existing saves are retained. Afterward, answer the visible **Saved Game** question if it appears.
+
+**Already installed, but starting the game says `--game_data_root does not exist` even though your ISO exists?** Versions 1.0.1/1.0.2 could build with the SDK's directory-only startup code. Download the **v1.0.4 installer** above, choose your ISO and the **same installation folder**, then run Install / Recheck to rebuild with ISO support. You do not need to delete your installation. Start through **tabletennis_launcher.exe** afterward; the ISO must remain available.
 
 Click **Open log** in the installer. You can retry after fixing the reported issue; downloaded components are cached. If Windows security blocks a required component, installation stops and security settings remain unchanged.
 
 The installer is not code-signed. Automatic installation of missing Microsoft components has not yet been tested on a completely clean Windows machine. The installer backend was tested with its downloaded portable Python runtime and existing compiler/SDK installations. The separate ReXGlue download was previously blocked by security software on the development PC; that first-download path remains unverified.
 
-Existing local saves and graphics settings are retained during repair; the selected ISO path is updated. Save/load itself was not revalidated for this update.
+Existing local saves and graphics settings are retained during repair; the selected ISO path is updated. First-run save creation and startup with that save were checked in isolated profiles; gameplay progress save/load was not fully revalidated.
 
 ## How it works
 
@@ -83,7 +87,7 @@ Locally generated files stay under the installation folder. Do not upload `dist`
 <details>
 <summary>Developer / advanced installation</summary>
 
-The **Table-Tennis-Local-Build-v1.0.3.zip** asset is the source package for developers. It is not required by players using the installer.
+The **Table-Tennis-Local-Build-v1.0.4.zip** asset is the source package for developers. It is not required by players using the installer.
 
 For manual builds, install 64-bit Python 3.10+, Visual Studio 2022 C++ Build Tools with Windows SDK/CMake/Ninja, and Clang 19+. Clang can be standalone or included in Visual Studio. Then use:
 
@@ -99,7 +103,7 @@ Checks and source packaging:
 py -3 -m unittest discover -s tests -v
 py -3 project/tools/package_source.py --audit-index
 py -3 project/tools/package_source.py --output 'E:\ReleaseOutput'
-powershell -File project/tools/build_installer.ps1 -SourceZip 'E:\ReleaseOutput\Table-Tennis-Local-Build-v1.0.3.zip' -OutputPath 'E:\ReleaseOutput\Install-Table-Tennis.exe'
+powershell -File project/tools/build_installer.ps1 -SourceZip 'E:\ReleaseOutput\Table-Tennis-Local-Build-v1.0.4.zip' -OutputPath 'E:\ReleaseOutput\Install-Table-Tennis.exe'
 ```
 
 The installer builder validates every embedded source file against the public allowlist before compilation. It rejects extra or altered payload files. Native patch rules store offsets, hashes and replacement text rather than removed original function bodies. See [implementation and validation](reports/LOCAL_BUILD.md) and [changelog](CHANGELOG.md).

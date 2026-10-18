@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.4 — 2026-10-18
+
+- Fixed apparent endless `LOADING MAIN MENU...` on first launch: the loading overlay covered the game's missing-save question, while automatic Start input prevented answering it.
+- Pause the overlay and automatic input when the retail startup message-dialog movie is active. Real controller input becomes available after releasing the skip button.
+- Keep the original choice to create a saved game or continue without saving; do not silently choose for the player or replace existing saves.
+- Reapply release-before-input handling when leaving a startup dialog for the main menu, so a held confirmation cannot select Tournament.
+- Tested the first-run missing-save screen, new save creation and confirmation, continuing without saving, and automatic startup with the newly created save in isolated local profiles.
+
+Repair: run the new installer with your ISO and the same installation folder. At the first-run **Saved Game** question, choose **A** to create a save or **B** to continue without saving; follow any further confirmation on screen.
+
 ## v1.0.3 — 2026-10-18
 
 - Fixed startup incorrectly rejecting an existing ISO with `--game_data_root does not exist`. The stock SDK v0.10.0 accepts only a directory; previous tests used an installed SDK whose application source had already been modified for ISO mounting.
