@@ -1,6 +1,8 @@
-# Rockstar Games presents Table Tennis — Windows installer
+# Rockstar Games presents Table Tennis — Windows PC Recompilation
 
-Build and play from **your own Xbox 360 disc image**, with a graphical installer that prepares the required components for you.
+Bring the Xbox 360 classic to your PC with **up to 4K output, higher internal 3D resolution, high-refresh framerate options, and optional image filters**. The game code is recompiled to native Windows x64 with ReXGlue SDK v0.10.0 and DirectX 12 rendering.
+
+Build and play from **your own Xbox 360 disc image**. A graphical installer prepares the required components and creates the local game build for you.
 
 ## Get started
 
@@ -20,12 +22,45 @@ First setup needs internet access, several GB of free space and time to download
 
 The ISO is checked before installing large compiler components and is always opened read-only. Other game versions are rejected. Keep your ISO available after installation: the game still reads it during play.
 
-## Included game fixes
+## PC enhancements
+
+### Sharper 3D rendering — up to 4K
+
+Choose your display preset directly in the game launcher:
+
+| Preset | Output resolution | Internal 3D rendering scale |
+|---|---|---|
+| **720p** | 1280 × 720 | 1× |
+| **1080p / Full HD** | 1920 × 1080 | 1×, presented with your chosen image filter |
+| **1440p / QHD** | 2560 × 1440 | 2× on each axis |
+| **4K / Ultra HD** | 3840 × 2160 | 3× on each axis |
+
+The 1440p and 4K presets raise the internal rendering scale as well as the output size. The 1080p preset keeps 1× internal rendering and uses the selected presentation filter for output scaling.
+
+### High-refresh display options
+
+Select **60, 120, 144 or 240 FPS targets**, or choose **Unlocked** for uncapped presentation. A 60 FPS VSync option is available, while higher-framerate modes enable the variable-refresh/tearing presentation path for compatible displays, including suitably configured G-Sync and FreeSync setups.
+
+Pick the resolution and framerate combination that suits your GPU and monitor. Achieved FPS depends on your hardware, scene and settings; these are selectable targets rather than guaranteed benchmark results.
+
+### Image filters and anti-aliasing
+
+- **FXAA** and **FXAA Extreme** options for edge smoothing, plus an Off setting.
+- **AMD FidelityFX FSR**, **Contrast Adaptive Sharpening (CAS)** or **Bilinear** presentation options.
+- **Fullscreen or windowed mode**, configured before launching the game.
+
+### A more convenient PC experience
+
+- **Graphical settings launcher:** choose your ISO, resolution, framerate, display mode and image filters in one place; settings are saved for the next launch.
+- **Live FPS and frame-time overlay:** toggle it with **F10** while playing.
+- **Quick exit:** press **Escape** to return to Windows.
+- **SDL3 gamepad support**, with controller detection active before the startup intro.
+
+### Offline menu and startup improvements
 
 - Xbox Live removed from the main menu to avoid the unavailable online screen. Tournament, Exhibition, Training Mode, Options and Extras remain available.
 - A gamepad button immediately stops the startup intro and continues to the main menu after loading, without another Start press.
 - A large, centered, antialiased **LOADING MAIN MENU...** transition while the menu initializes. The skip press cannot accidentally select a menu item.
-- The graphical game launcher, display/framerate settings, **F10** FPS overlay and **Escape** to exit.
 
 ## If installation stops
 
