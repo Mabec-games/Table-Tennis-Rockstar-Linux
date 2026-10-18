@@ -13,6 +13,7 @@ FIXED_FILES = {
     'project/src/main.cpp', 'project/src/tabletennis_app.h', 'project/src/offline_menu_device.h',
     'project/src/intro_skip.cpp', 'project/src/intro_skip.h',
     'project/sdk-overrides/rex/platform/fpscr.h', 'project/sdk-overrides/rex/ppc/context.h',
+    'project/sdk-overrides/rex_app.cpp',
     'project/tools/disc_image.py', 'project/tools/patch_menu.py', 'project/tools/patch_native.py',
     'project/tools/native_edits.json', 'project/tools/setup_build.py', 'project/tools/package_source.py',
     'tests/test_local_build.py', 'licenses/ReXGlue/LICENSE.txt', 'licenses/SDL3/LICENSE.txt',
@@ -42,7 +43,7 @@ def package(output):
     files = audit()
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    path = output / 'Table-Tennis-Local-Build-v1.0.2.zip'
+    path = output / 'Table-Tennis-Local-Build-v1.0.3.zip'
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name in files:
             archive.write(ROOT / name, name)

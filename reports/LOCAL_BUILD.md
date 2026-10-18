@@ -67,6 +67,47 @@ editing the user's installed SDK.
 
 ## Verification
 
+### v1.0.3 ISO startup regression
+
+The earlier installed-SDK validation missed a local modification to the SDK's
+`share/rexglue/rex_app.cpp`. The stock v0.10.0 file rejects a regular ISO file
+because it checks `is_directory`. Compiling that unmodified application source
+reproduced `--game_data_root does not exist` with an existing supported ISO.
+
+The project now compiles its own BSD-licensed `sdk-overrides/rex_app.cpp` adapter,
+independent of the installed SDK application source. It validates and mounts a
+disc image read-only before XEX loading. CMake removes the SDK source explicitly
+and stops if the expected source is missing. No installed SDK file is edited.
+
+The fixed build mounted the same ISO and ran the intro for 23 seconds. Runtime
+tests also passed in isolated temporary folders with the ISO outside the install
+folder, once via an explicit argument and once via saved settings. Both launches
+used a different working directory and initialized the offline menu and runtime.
+The nine synthetic tests and the opt-in runtime test passed.
+
+The new installer's embedded payload was extracted into the existing isolated
+installation, then its normal PowerShell backend completed ISO validation,
+generation, patching, all 94 C++ build steps, launcher compilation and staging
+using cached Python, existing compiler tools and the supplied SDK. An actual
+launcher invocation then loaded a saved path containing `=`, launched the rebuilt
+game and mounted an uppercase `.ISO` from a different working directory. The ISO
+test name was a temporary hard link; no disc contents were changed. The GUI's
+Install button itself was not exercised for this repair test.
+
+To repeat with a private local build on Windows (never upload these game files):
+
+```powershell
+$env:TABLETENNIS_TEST_DIST = 'E:\YourInstall\dist'
+$env:TABLETENNIS_TEST_ISO = 'E:\YourDiscs\TableTennis.iso'
+py -3 -m unittest discover -s tests -v
+```
+
+The SDK download and first-time Microsoft component installation remain subject
+to the limitations below; this startup repair does not establish that those
+paths work on a clean Windows installation.
+
+### Earlier build validation
+
 - Extracted the supported XEX and menu archive from the user's ISO locally.
 - The patched menu archive SHA-256 matches the preceding verified game build:
   BF0A4D39A784D9924FB03FE7B7B21380F5AC4B337932F6946B52F9D23CABD6F9.

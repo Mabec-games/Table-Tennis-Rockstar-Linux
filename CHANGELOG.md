@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.0.3 — 2026-10-18
+
+- Fixed startup incorrectly rejecting an existing ISO with `--game_data_root does not exist`. The stock SDK v0.10.0 accepts only a directory; previous tests used an installed SDK whose application source had already been modified for ISO mounting.
+- Include the BSD-licensed ISO-capable application adapter in the reviewed source payload and compile it instead of the SDK's directory-only application source. The installed SDK stays unchanged.
+- Mount the user's ISO read-only as `game:` and `d:` before loading the XEX, including disc images named with uppercase `.ISO`.
+- Use an explicit `--game_data_root="..."` launch argument and preserve saved ISO paths containing an equals sign.
+- Missing-disc errors now explain how to select the ISO again in the launcher.
+- Added an opt-in runtime regression test that boots a private build with an ISO outside the install folder, using both command-line selection and saved settings from a different working directory.
+
+Repair: download the v1.0.3 installer, select your ISO and the **same installation folder**, then click Install / Recheck. No deletion or fresh Windows component installation is required when the components are already present.
+
 ## v1.0.2 — 2026-10-18
 
 - Added a standalone graphical installer: choose ISO, allow components, Install, then Play. The public installer contains only project-authored installer code and the reviewed source payload.

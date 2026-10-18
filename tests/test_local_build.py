@@ -1,8 +1,12 @@
 import hashlib
+import os
 from pathlib import Path
+import shutil
 import struct
+import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest import mock
 
@@ -109,6 +113,52 @@ class LocalBuildTests(unittest.TestCase):
         validate.assert_called_once_with(path)
         tools.assert_not_called()
         sdk.assert_not_called()
+
+
+@unittest.skipUnless(sys.platform == 'win32' and os.environ.get('TABLETENNIS_TEST_DIST')
+                     and os.environ.get('TABLETENNIS_TEST_ISO'),
+                     'Opt-in runtime check needs a private local build and retail ISO')
+class RuntimeIsoTests(unittest.TestCase):
+    def test_iso_boot_from_arguments_and_saved_settings(self):
+        """Catch the SDK directory-only guard, including direct EXE launch.
+
+        Copy only local runtime files into an isolated folder. Never change the
+        installed settings, saves, SDK or ISO; no game files belong in Git.
+        """
+        dist = Path(os.environ['TABLETENNIS_TEST_DIST']).resolve(strict=True)
+        iso = Path(os.environ['TABLETENNIS_TEST_ISO']).resolve(strict=True)
+        for source in ('argument', 'settings'):
+            with self.subTest(source=source), tempfile.TemporaryDirectory(prefix='Table Tennis ISO test ') as folder:
+                target = Path(folder)
+                for pattern in ('tabletennis.exe', '*.dll'):
+                    for path in dist.glob(pattern):
+                        shutil.copy2(path, target / path.name)
+                shutil.copytree(dist / 'assets', target / 'assets')
+                settings = f'iso_path={iso}\n' if source == 'settings' else ''
+                (target / 'settings.ini').write_text(settings + 'framerate=60\n', encoding='utf-8')
+                args = [str(target / 'tabletennis.exe'), '--fullscreen=false']
+                if source == 'argument':
+                    args.append('--game_data_root=' + str(iso))
+                process = subprocess.Popen(args, cwd=target.parent,
+                                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                try:
+                    deadline = time.monotonic() + 20
+                    log = ''
+                    while time.monotonic() < deadline:
+                        log = '\n'.join(p.read_text(encoding='utf-8', errors='replace')
+                                        for p in (target / 'logs').glob('*.log'))
+                        if 'Runtime and VFS fully initialized' in log or '[error]' in log or process.poll() is not None:
+                            break
+                        time.sleep(0.2)
+                    self.assertIn('Mounted ISO via DiscImageDevice', log, log[-6000:])
+                    self.assertIn('Runtime and VFS fully initialized', log, log[-6000:])
+                    self.assertNotIn('--game_data_root does not exist', log)
+                    self.assertIn('TabletennisOfflineMenu', log, log[-6000:])
+                    self.assertIsNone(process.poll(), 'Game exited during ISO startup')
+                finally:
+                    if process.poll() is None:
+                        process.terminate()
+                    process.wait(timeout=10)
 
 
 if __name__ == '__main__':

@@ -24,6 +24,17 @@ endif()
 
 rexglue_setup_target(tabletennis)
 
+# The stock v0.10.0 application accepts directories only. Compile our BSD-licensed
+# ISO-capable application adapter instead, without editing the installed SDK.
+get_target_property(TABLETENNIS_HOST_SOURCES tabletennis SOURCES)
+set(TABLETENNIS_SDK_APP "${REXGLUE_SHARE_DIR}/rex_app.cpp")
+if(NOT TABLETENNIS_SDK_APP IN_LIST TABLETENNIS_HOST_SOURCES)
+    message(FATAL_ERROR "SDK application source not found; cannot enable ISO support")
+endif()
+list(REMOVE_ITEM TABLETENNIS_HOST_SOURCES "${TABLETENNIS_SDK_APP}")
+set_property(TARGET tabletennis PROPERTY SOURCES "${TABLETENNIS_HOST_SOURCES}")
+target_sources(tabletennis PRIVATE sdk-overrides/rex_app.cpp)
+
 # Apply the x64 FP exception-mask correction without modifying the installed SDK.
 target_include_directories(tabletennis BEFORE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/sdk-overrides")
 if(TARGET tabletennis_recomp)

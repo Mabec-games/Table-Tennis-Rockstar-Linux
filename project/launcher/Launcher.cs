@@ -412,7 +412,7 @@ namespace TableTennisLauncher
                 {
                     foreach (var line in File.ReadAllLines(configFile))
                     {
-                        var parts = line.Split('=');
+                        var parts = line.Split(new char[] { '=' }, 2);
                         if (parts.Length != 2) continue;
                         string key = parts[0].Trim();
                         string val = parts[1].Trim();
@@ -586,7 +586,7 @@ namespace TableTennisLauncher
             }
 
             string args = string.Format(
-                "--game_data_root \"{0}\" --resolution_scale={1} --draw_resolution_scale_x={1} --draw_resolution_scale_y={1} --window_width={2} --window_height={3} --fullscreen={4} --swap_post_effect={5} --present_effect={6} --show_fps={7} --framerate={8} --protect_zero=false --gpu_allow_invalid_fetch_constants=true",
+                "--game_data_root=\"{0}\" --resolution_scale={1} --draw_resolution_scale_x={1} --draw_resolution_scale_y={1} --window_width={2} --window_height={3} --fullscreen={4} --swap_post_effect={5} --present_effect={6} --show_fps={7} --framerate={8} --protect_zero=false --gpu_allow_invalid_fetch_constants=true",
                 selectedIso, resScale, width, height, isFullscreen.ToString().ToLower(), aa, post, showFps.ToString().ToLower(), targetFps);
 
             var psi = new ProcessStartInfo
