@@ -1,0 +1,44 @@
+# ReXGlue function overrides for Rockstar Games presents Table Tennis
+# Discovered via PPC disassembly analysis of default.xex and crash logs
+
+[functions]
+# 1. Uncalled tail helper ending with blr at 0x8245FDCC
+0x8245FD08 = { size = 200 }
+
+# 2. Virtual method dispatch thunks at 0x8211CC48..0x8211CC88
+0x8211CC58 = { size = 16 }
+0x8211CC68 = { size = 16 }
+0x8211CC78 = { size = 16 }
+
+# 3. Vtable functions and interface dispatch thunks
+0x82245464 = { size = 4 }
+0x82246740 = { size = 184 }
+0x8244EF20 = { size = 20 }
+0x824648E8 = { size = 8 }
+0x824648F0 = { size = 8 }
+0x82464E40 = { size = 28 }
+0x82468CE0 = { size = 8 }
+0x82468CE8 = { size = 8 }
+0x82468CF0 = { size = 8 }
+0x82468CF8 = { size = 8 }
+0x82468D00 = { size = 8 }
+0x82468D20 = { size = 8 }
+0x82468D28 = { size = 8 }
+0x82468D38 = { size = 8 }
+0x82468D48 = { size = 8 }
+0x8248D840 = { size = 8 }
+0x8248D860 = { size = 8 }
+0x8248D880 = { size = 8 }
+0x8248D8A0 = { size = 8 }
+0x8248DA88 = { size = 32 }
+0x8248DAA8 = { size = 32 }
+0x8248DAC8 = { size = 32 }
+0x8248DAE8 = { size = 32 }
+0x8248DB08 = { size = 32 }
+0x8248DB28 = { size = 32 }
+0x8248DB48 = { size = 32 }
+0x8248DB68 = { size = 32 }
+0x8248DB88 = { size = 32 }
+0x8248DBA8 = { size = 32 }
+0x82494140 = { size = 24 }
+0x82494158 = { size = 8 }

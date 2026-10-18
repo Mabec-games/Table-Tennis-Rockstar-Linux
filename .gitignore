@@ -1,0 +1,36 @@
+# Original game material and all local generated/runtime output stay private.
+*.iso
+*.xex
+*.rpf
+*.bin
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+*.zip
+*.log
+*.pyc
+__pycache__/
+private_work/
+project/generated/
+build/
+dist/
+.tools/
+user_data/
+cache/
+logs/
+scratch/
+.vs/
+.vscode/
+sdk/
+private_backups/
+# Legacy local files retained when migrating an existing checkout.
+/reports/*
+!/reports/LOCAL_BUILD.md
+/project/src/game_menu.cpp
+/project/src/game_menu.h
+/project/build.bat
+/project/CMakePresets.json
+/project/tools/patch_offline_menu.py
+/project/tools/patch_intro_timing.py

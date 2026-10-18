@@ -1,0 +1,256 @@
+[
+  {
+    "name": "sub_821CA3F0",
+    "input_sha256": "b2b41ea935e80479ea3819a2eff7ae0ac7d1e94fd5931d53dd687929011cb97e",
+    "output_sha256": "0714226d0cbdac25a3d2213651329fc85c7f05de4d2ef4014219070191fbc758",
+    "edits": [
+      {
+        "offset": 550,
+        "delete": 41,
+        "insert": "\t// mr r30,r4 -- OFFLINE PC PORT: force online flag = 0\n\tctx.r30.u64 = 0;\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_822FBD50",
+    "input_sha256": "c381c8df563a62fde697289ab053835cad8f21ce612a74e2900ac4a67f0daa5b",
+    "output_sha256": "2805455949d3c23186cb79d149006302b1b3e44ec33bfa7294b8e6fe17ed21e7",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\ttabletennis::intro::ObserveFrontend(ctx, base);\n"
+      },
+      {
+        "offset": 1648,
+        "delete": 45,
+        "insert": "\tREX_STORE_U32(ctx.r3.u32 + 0, 0); // OFFLINE: force onlineAuthorized = 0\n"
+      },
+      {
+        "offset": 14322,
+        "delete": 63,
+        "insert": "\t// stw r26,0(r3) -- OFFLINE PC PORT: force GLOBAL_ONLINE_ENABLED = 0\n\tREX_STORE_U32(ctx.r3.u32 + 0, 0);\n"
+      },
+      {
+        "offset": 15070,
+        "delete": 66,
+        "insert": "\t// OFFLINE: suppressed sub_822FD580(ctx, base)\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_822FC150",
+    "input_sha256": "ff5af166bc3d1cf1561beacf6d401b82e53d0a971e62eaaceefa409da6edde98",
+    "output_sha256": "1b15ab8c0a3955fc4998fbe32a764c88730935f788244146c552fa47f1beae8a",
+    "edits": [
+      {
+        "offset": 19244,
+        "delete": 408,
+        "insert": "\t// OFFLINE: State 58 (online create) suppressed - stay in State 55 (Main Menu)\n\tREX_STORE_U32(ctx.r30.u32 + 5564, 55);\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_822FC970",
+    "input_sha256": "2ee8f272b60813b923769089bca0705bf65305b4a4e081eec9f32cee0080a7b9",
+    "output_sha256": "4789f87d45de0667e6fb7d222aaf5f00891d8144a066a13dcbf36d799a739c1c",
+    "edits": [
+      {
+        "offset": 2980,
+        "delete": 0,
+        "insert": "\t// OFFLINE PC PORT: Force Flash GLOBAL_ONLINE_ENABLED = false (0)\n\t{\n\t\tPPCContext sub_ctx = ctx;\n\t\tsub_ctx.r3.u64 = REX_LOAD_U32(ctx.r28.u32 + 5556);\n\t\tsub_ctx.r4.s64 = -2113536000 + -12244; // 0x8205D02C: GLOBAL_ONLINE_ENABLED\n\t\tsub_823F9318(sub_ctx, base);\n\t\tif (sub_ctx.r3.u32 != 0) {\n\t\t\tREX_STORE_U32(sub_ctx.r3.u32 + 0, 0);\n\t\t\tREX_STORE_U32(sub_ctx.r3.u32 + 4, 3);\n\t\t}\n\t}\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_822FD580",
+    "input_sha256": "644524f05b6a8948fbc414006c3f055d6e23dc118bf98e1f08a19eec9fcd3293",
+    "output_sha256": "0b185c0434fa819b0211df2da7407154623bb3f8da3cf7adc74d5e3c544affea",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\treturn;\n"
+      },
+      {
+        "offset": 3689,
+        "delete": 45,
+        "insert": "\tREX_STORE_U32(ctx.r3.u32 + 0, 0); // OFFLINE: force onlineAuthorized = 0\n"
+      },
+      {
+        "offset": 11123,
+        "delete": 45,
+        "insert": "\tREX_STORE_U32(ctx.r3.u32 + 0, 0); // OFFLINE: force onlineAuthorized = 0\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_822FE0C8",
+    "input_sha256": "bf15a503900b5f81c5cc3650f351d71a133a835d543c71cd2c5d78f00736a573",
+    "output_sha256": "62ff8d13182d799bf64992b3cd974673f751d3fdb95560e22bf520a1636bef98",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\treturn;\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_822FE1E0",
+    "input_sha256": "d00c9db68f22d1b19f10e2dd48e6169403961ffa07196f47ab7f7b8cbd2e9a62",
+    "output_sha256": "4b44596b6952a48e693a12e95776d0c96919e987ed20c0f251597cb77c6b3f05",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\tREXLOG_INFO(\"Tabletennis: Blocked Xbox Live activation in sub_822FE1E0.\");\n\treturn;\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_82301618",
+    "input_sha256": "a3614799b17d0badc6171d5f3c193d1c416c5e94082262eade565796c2c1a538",
+    "output_sha256": "b1ddeef7f7dd5c445b4d8a9d966d04965fec956d9827f549357d099f850dbb38",
+    "edits": [
+      {
+        "offset": 9801,
+        "delete": 370,
+        "insert": "\t// OFFLINE PC PORT: Suppress Xbox Live screen 3 transition, stay on main menu\n\tgoto loc_823018C0;\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_823060D8",
+    "input_sha256": "b1d16313695baa51cab297ba56c579fce3e091a668978443bdb4b80e2cbbae46",
+    "output_sha256": "4fdbe8c697cb268f1ba29a9ad2839cc585ca731dafc8ba5a8defb2bf453ac648",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\tif (tabletennis::intro::SkipMovies()) { ctx.r3.u64 = 0; return; }\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_82306BB8",
+    "input_sha256": "38018d0751de0df15f715ccfd5cd870c5a4a687dd87b86f49f3f74203f4e174d",
+    "output_sha256": "aa13b0efa1743e3ccc927ad2233a8a8ede9e7f25387fb4b0113a58a1b28e1e3b",
+    "edits": [
+      {
+        "offset": 1971,
+        "delete": 0,
+        "insert": "\tif (tabletennis::intro::SkipMovies()) ctx.r3.u64 = 0;\n"
+      },
+      {
+        "offset": 4152,
+        "delete": 38,
+        "insert": "\ttabletennis::intro::AdvanceIntroMovie(ctx, base);\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_82309740",
+    "input_sha256": "c4820daa1782afa6a06c5399d3bfc7578062565e285ed3089482147101d855e5",
+    "output_sha256": "0c19d3d6f245c5a2194cad9eff674b02162fc021cb0d407e69463bf5d4babd19",
+    "edits": [
+      {
+        "offset": 1973,
+        "delete": 0,
+        "insert": "\tif (tabletennis::intro::SkipMovies()) ctx.r3.u64 = 0;\n"
+      },
+      {
+        "offset": 4156,
+        "delete": 38,
+        "insert": "\ttabletennis::intro::AdvanceIntroMovie(ctx, base);\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_8230FAD8",
+    "input_sha256": "85adcaedc0fb1d4ee61b3b64301632c45f049113044485921c9c244b0176a34c",
+    "output_sha256": "2cad42efac4e6594674ef96fb6ab1d536d4d592510e8eda9d6126295b54c6daa",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\treturn;\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_823D3FF8",
+    "input_sha256": "b3d12f2788e65207cfead33f200e899a5f7e7103e72d910e8682b7f746cc49b3",
+    "output_sha256": "2f6068a287145f435e5b2a86071bfdd75be0f3203e5989dbc97fff09d34f5be9",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\tctx.r3.u64 = 1; // 1 = online features disabled\n\treturn;\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_823F90C8",
+    "input_sha256": "55f676825705c25ea48bc36bff0099fe43a2cc2cb99c4a0086f11aa72182a3a1",
+    "output_sha256": "37868bf5636fd4f936e7e8717f603abd0822213868fe2567a3489b20947838ed",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\tif (tabletennis::intro::AdvanceFrontendMovie(ctx, base)) return;\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_8241ED40",
+    "input_sha256": "709bf33e27d12ce06dd67b430cb49dac46d3ce14e1b31b900246be8a0429637d",
+    "output_sha256": "2305dcc1d121e18dabe5d44deae6e89f66833125a1e6fac501acb57afbebee8b",
+    "edits": [
+      {
+        "offset": 4930,
+        "delete": 45,
+        "insert": "\tREX_STORE_U32(ctx.r3.u32 + 0, 0); // OFFLINE: force onlineAuthorized = 0\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_82567080",
+    "input_sha256": "d3c7867f62adf70ac95bf420c46d3f71c3ca6419ac4bcf85b5919bbc98ea80f4",
+    "output_sha256": "8ccbc2b7b24cec51db8c525b099758627c649c3dc8450343e474f7cbe4f50382",
+    "edits": [
+      {
+        "offset": 139,
+        "delete": 37,
+        "insert": "\t{\n\t\tconst uint32_t user = ctx.r3.u32;\n\t\tconst uint32_t state = ctx.r5.u32;\n\t\t__imp__XamInputGetState(ctx, base);\n\t\ttabletennis::intro::FilterInput(ctx, base, user, state);\n\t}\n"
+      }
+    ]
+  },
+  {
+    "name": "tabletennis_pch.h",
+    "input_sha256": "56eb9b49a565ca5acc8a6e6da556c0f1d55accc26f36dcf8698c1cc65e359af1",
+    "output_sha256": "53936e6d72a3cbbe87f3b8ead29d727fddaa80dae33ec77882c3670eb3547107",
+    "edits": [
+      {
+        "offset": 13801,
+        "delete": 0,
+        "insert": "extern \"C\" void Tabletennis_VdSwap_Hook(PPCContext& ctx, uint8_t* base);\n#define __imp__VdSwap Tabletennis_VdSwap_Hook\n\nextern \"C\" void Tabletennis_XamUserGetSigninState_Hook(PPCContext& ctx, uint8_t* base);\n#define __imp__XamUserGetSigninState Tabletennis_XamUserGetSigninState_Hook\n\nextern \"C\" void Tabletennis_XamUserCheckPrivilege_Hook(PPCContext& ctx, uint8_t* base);\n#define __imp__XamUserCheckPrivilege Tabletennis_XamUserCheckPrivilege_Hook\n\nextern \"C\" void Tabletennis_XamShowSigninUI_Hook(PPCContext& ctx, uint8_t* base);\n#define __imp__XamShowSigninUI Tabletennis_XamShowSigninUI_Hook\n\n"
+      },
+      {
+        "offset": 14173,
+        "delete": 0,
+        "insert": "    if (rex_indirect_target_ == 0) [[unlikely]] {                                          \\\n      REXCPU_WARN(\"Tabletennis: Caught call to NULL (0x00000000) from LR=0x{:08X}! Returning safely.\", (uint32_t)ctx.lr); \\\n      break;                                                                               \\\n    }                                                                                      \\\n"
+      },
+      {
+        "offset": 15103,
+        "delete": 0,
+        "insert": "    }                                                                                          if (rex_indirect_func_) [[likely]] {                                                   \\\n      rex_indirect_func_(ctx, base);                                                       \\\n    } else {                                                                               \\\n      REXCPU_WARN(\"Tabletennis: Caught call to invalid function 0x{:08X} from LR=0x{:08X}! Skipping.\", \\\n                  rex_indirect_target_, (uint32_t)ctx.lr);                                 \\\n"
+      },
+      {
+        "offset": 15196,
+        "delete": 93,
+        "insert": ""
+      }
+    ]
+  }
+]
