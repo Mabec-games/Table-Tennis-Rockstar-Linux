@@ -1,5 +1,44 @@
 # Local build and source distribution
 
+## v1.0.2 graphical installer
+
+The public `Install-Table-Tennis.exe` is compiled from `project/installer/Installer.cs`
+and embeds the 31-file reviewed source ZIP. It contains no compiled game or retail
+archive. The installer builder verifies all ZIP member names, uniqueness and bytes
+against the public source allowlist before embedding it.
+
+The GUI chooses ISO/destination, obtains download/install consent, extracts only
+the source payload and runs `bootstrap.ps1`. The bootstrap downloads the official
+Python 3.14.8 x64 embedded runtime and verifies its published SHA-256. Python stays
+isolated under `.tools`; no system Python installation or pip packages are needed.
+
+The selected retail ISO is validated before compiler installation. If the compiler
+check fails, the bootstrap verifies Microsoft's installer Authenticode signature
+and requests the VC tools workload, recommended Windows SDK components, CMake and
+Clang. Only that Microsoft installation requests elevation. Restart codes are
+reported without restarting automatically. The project does not disable security
+controls or bypass blocked downloads.
+
+Sources for component IDs and the pinned runtime:
+- https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
+- https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio
+- https://www.python.org/downloads/release/python-3148/
+
+The bootstrap was run from an unpacked source package, downloaded/verified the
+portable Python runtime, validated the ISO, and completed all 95 C++ build steps,
+launcher compilation and runtime staging using existing compilers and a supplied
+SDK. The GUI rendered correctly and refused to begin without an ISO. Automatic
+installation of missing Microsoft components was not exercised on this PC.
+The first-time ReXGlue download remains unverified due to the earlier security block.
+
+All nine automated tests passed. These include rejection of extra game files in
+the embedded payload and verification that ISO-only validation does not inspect
+the compiler environment or obtain an SDK. Re-running the final bootstrap with
+downloads disabled reused the isolated runtime, applied zero native edits and
+completed successfully without changing system components.
+
+The existing working game installation is separate from installer validation.
+
 The public files are integration code, locally applied changes, build scripts,
 metadata and third-party notices. Generated game functions and original/modified
 retail archives are not part of the source allowlist.

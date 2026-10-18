@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.0.2 — 2026-10-18
+
+- Added a standalone graphical installer: choose ISO, allow components, Install, then Play. The public installer contains only project-authored installer code and the reviewed source payload.
+- Added automatic, checksum-verified portable Python setup. Players do not need to install Python themselves.
+- Added automatic setup of missing Microsoft C++/Windows SDK/CMake/Ninja/Clang components through Microsoft's signed installer, after the user's consent and any Windows permission prompt.
+- Validate the retail ISO before attempting large compiler installations.
+- Added installation status, expandable log, restart guidance, repair/retry and a desktop shortcut.
+- Added Visual Studio's bundled Clang discovery and ISO path updates that retain existing graphics settings.
+- Added embedded-payload validation so game files or altered source cannot accidentally be bundled into the installer.
+- Replaced the player-facing manual build instructions with the simple installer download. Manual setup remains available for developers.
+
+Validation: portable Python downloaded and checksum-verified; full local backend build with existing compilers and supplied SDK passed. GUI rendered and missing-ISO validation checked. First-time Microsoft component installation and the previously blocked ReXGlue download path are not verified on a clean Windows PC.
+
 ## v1.0.1 — 2026-10-18
 
 - Changed distribution to local build tools: no retail menu archive, game executable, XEX or generated game functions in the public source package.

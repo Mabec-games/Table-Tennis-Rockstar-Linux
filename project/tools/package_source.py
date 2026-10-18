@@ -17,6 +17,7 @@ FIXED_FILES = {
     'project/tools/native_edits.json', 'project/tools/setup_build.py', 'project/tools/package_source.py',
     'tests/test_local_build.py', 'licenses/ReXGlue/LICENSE.txt', 'licenses/SDL3/LICENSE.txt',
     'reports/LOCAL_BUILD.md',
+    'project/installer/Installer.cs', 'project/tools/bootstrap.ps1', 'project/tools/build_installer.ps1',
 }
 
 
@@ -41,7 +42,7 @@ def package(output):
     files = audit()
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    path = output / 'Table-Tennis-Local-Build-v1.0.1.zip'
+    path = output / 'Table-Tennis-Local-Build-v1.0.2.zip'
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name in files:
             archive.write(ROOT / name, name)
@@ -53,12 +54,26 @@ def package(output):
     print(f'Source-only package verified: {len(files)} files, {path.stat().st_size:,} bytes; SHA-256 {digest}')
 
 
+def verify_zip(path):
+    files = audit()
+    with zipfile.ZipFile(path) as archive:
+        if len(archive.namelist()) != len(files) or set(archive.namelist()) != set(files) or archive.testzip():
+            raise ValueError('Installer payload differs from the public source allowlist')
+        for name in files:
+            if archive.read(name) != (ROOT / name).read_bytes():
+                raise ValueError(f'Installer payload does not match reviewed source: {name}')
+    print(f'PASS: installer payload contains exactly {len(files)} reviewed public source files.')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--audit-index', action='store_true')
+    parser.add_argument('--verify-zip', type=Path)
     args = parser.parse_args()
     if args.audit_index:
         print(f'PASS: {len(audit(tracked=True))} tracked files match the public source allowlist.')
     if args.output:
         package(args.output)
+    if args.verify_zip:
+        verify_zip(args.verify_zip)

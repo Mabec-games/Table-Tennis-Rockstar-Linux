@@ -77,13 +77,26 @@ class DiscImage:
         return self.read(self.base + sector * 2048, size)
 
 
-def extract(iso, root):
-    root = Path(root)
+def read_inputs(iso):
     with DiscImage(iso) as disc:
         xex = disc.file('default.xex', 16 * 1024 * 1024)
         if hashlib.sha256(xex).hexdigest() != XEX_SHA256:
             raise ValueError('Unsupported game executable. Expected the retail USA/Europe release (Title ID 545407DF).')
         flash = disc.file('assets/resource/flash/flash.rpf', 32 * 1024 * 1024)
+    from patch_menu import ORIGINAL_ARCHIVE
+    if hashlib.sha256(flash).hexdigest() != ORIGINAL_ARCHIVE:
+        raise ValueError('Unsupported menu archive in the selected ISO')
+    return xex, flash
+
+
+def validate(iso):
+    read_inputs(iso)
+    print('Supported retail ISO verified. The disc image is unchanged.', flush=True)
+
+
+def extract(iso, root):
+    root = Path(root)
+    xex, flash = read_inputs(iso)
     # Validate both inputs before producing any files. The ISO is opened read-only.
     paths = {root / 'private_work/default.xex': xex,
              root / 'dist/assets/resource/flash/flash.rpf': flash}

@@ -4,12 +4,15 @@ import struct
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'project/tools'))
 from disc_image import DiscImage, MAGIC, extract
 from patch_native import apply_edits
 from patch_menu import patch
-from package_source import audit
+from package_source import audit, verify_zip
+import setup_build
+import zipfile
 
 
 def synthetic_iso(directory_sector=40, directory_size=64):
@@ -87,6 +90,25 @@ class LocalBuildTests(unittest.TestCase):
         names = audit()
         self.assertFalse(any(n.startswith(('dist/', 'private_work/', 'project/generated/', 'sdk/', '.tools/')) for n in names))
         self.assertFalse(any(Path(n).suffix in ('.exe', '.dll', '.xex', '.rpf', '.bin', '.iso') for n in names))
+
+    def test_installer_payload_rejects_added_game_files(self):
+        path = self.root / 'payload.zip'
+        with zipfile.ZipFile(path, 'w') as archive:
+            archive.writestr('dist/tabletennis.exe', b'not a real executable')
+        with self.assertRaisesRegex(ValueError, 'allowlist'):
+            verify_zip(path)
+
+    @unittest.skipUnless(sys.platform == 'win32', 'Windows bootstrap entry point')
+    def test_iso_validation_does_not_discover_or_install_compilers(self):
+        path = self.iso(synthetic_iso())
+        with mock.patch.object(sys, 'argv', ['setup_build.py', '--iso', str(path), '--validate-iso']), \
+             mock.patch.object(setup_build, 'validate') as validate, \
+             mock.patch.object(setup_build, 'build_tools') as tools, \
+             mock.patch.object(setup_build, 'find_sdk') as sdk:
+            setup_build.main()
+        validate.assert_called_once_with(path)
+        tools.assert_not_called()
+        sdk.assert_not_called()
 
 
 if __name__ == '__main__':
