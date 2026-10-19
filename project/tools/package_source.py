@@ -8,6 +8,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 ROOT_FILES = {'README.md', 'LICENSE', 'CHANGELOG.md', '.gitignore', 'setup.cmd', 'setup.ps1'}
 FIXED_FILES = {
+    'project/assets/tabletennis.ico', 'licenses/Icon/CREDITS.txt',
     'project/CMakeLists.txt', 'project/tabletennis_manifest.toml', 'project/overrides.toml',
     'project/cmake/rexglue.cmake', 'project/launcher/Launcher.cs',
     'project/src/main.cpp', 'project/src/tabletennis_app.h', 'project/src/offline_menu_device.h',
@@ -43,7 +44,7 @@ def package(output):
     files = audit()
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    path = output / 'Table-Tennis-Local-Build-v1.0.4.zip'
+    path = output / 'Table-Tennis-Local-Build-v1.0.5.zip'
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name in files:
             archive.write(ROOT / name, name)

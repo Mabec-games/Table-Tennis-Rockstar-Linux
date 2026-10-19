@@ -41,7 +41,7 @@ def find_sdk(path, offline):
                 if not archive.exists() or hashlib.sha256(archive.read_bytes()).hexdigest() != SDK_SHA256:
                     temp = archive.with_suffix('.download')
                     print('Downloading the official ReXGlue SDK v0.10.0 (about 45 MB).', flush=True)
-                    request = urllib.request.Request(SDK_URL, headers={'User-Agent': 'TableTennis-LocalBuilder/1.0.4'})
+                    request = urllib.request.Request(SDK_URL, headers={'User-Agent': 'TableTennis-LocalBuilder/1.0.5'})
                     with urllib.request.urlopen(request, timeout=120) as response, temp.open('wb') as output:
                         shutil.copyfileobj(response, output)
                     if hashlib.sha256(temp.read_bytes()).hexdigest() != SDK_SHA256:
@@ -156,7 +156,9 @@ def main():
     print('STAGE:Finishing installation', flush=True)
     dist = ROOT / 'dist'
     shutil.copy2(ROOT / 'build/tabletennis.exe', dist / 'tabletennis.exe')
+    shutil.copy2(ROOT / 'project/assets/tabletennis.ico', dist / 'tabletennis.ico')
     run([csc, '/nologo', '/target:winexe', '/optimize', f'/out:{dist / "tabletennis_launcher.exe"}',
+         f'/win32icon:{dist / "tabletennis.ico"}',
          f'/lib:{csc.parent / "WPF"}', '/r:PresentationCore.dll,PresentationFramework.dll,WindowsBase.dll,System.dll,System.Xaml.dll',
          ROOT / 'project/launcher/Launcher.cs'])
     for name in ('rexruntime.dll', 'rexgpu-xenos.dll', 'TracyClient.dll'):

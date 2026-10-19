@@ -14,8 +14,8 @@ using Microsoft.Win32;
 
 [assembly: AssemblyTitle("Table Tennis Installer")]
 [assembly: AssemblyDescription("Local game build installer; requires your own retail disc image.")]
-[assembly: AssemblyVersion("1.0.4.0")]
-[assembly: AssemblyFileVersion("1.0.4.0")]
+[assembly: AssemblyVersion("1.0.5.0")]
+[assembly: AssemblyFileVersion("1.0.5.0")]
 
 namespace TableTennisSetup {
     public class Program {
@@ -201,12 +201,7 @@ namespace TableTennisSetup {
                     play.Visibility = Visibility.Visible; install.Content = "Recheck / repair";
                     help.Text = "Your game is ready. Click Play to choose your display settings and start. Your ISO has not been modified.";
                     try {
-                        var shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
-                        var shortcut = shell.GetType().InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, shell,
-                            new object[] { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Table Tennis.lnk") });
-                        shortcut.GetType().InvokeMember("TargetPath", BindingFlags.SetProperty, null, shortcut, new object[] { Path.Combine(target, "dist", "tabletennis_launcher.exe") });
-                        shortcut.GetType().InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, shortcut, new object[] { Path.Combine(target, "dist") });
-                        shortcut.GetType().InvokeMember("Save", BindingFlags.InvokeMethod, null, shortcut, null);
+                        CreateDesktopShortcut(target, Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
                     } catch (Exception shortcutError) { WriteLine("Desktop shortcut could not be created: " + shortcutError.Message); }
                 } else if (exit == 3010) status.Text = "Restart Windows, then open this installer again to finish.";
                 else status.Text = "Installation stopped. " + (installationError ?? "Open the log for details; you can retry after correcting the problem.");
@@ -216,6 +211,16 @@ namespace TableTennisSetup {
                 install.IsEnabled = chooseIso.IsEnabled = chooseFolder.IsEnabled = iso.IsEnabled = folder.IsEnabled = consent.IsEnabled = true;
                 showLog.IsEnabled = logPath != null && File.Exists(logPath);
             }
+        }
+        static void CreateDesktopShortcut(string target, string desktop) {
+            var shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
+            var shortcut = shell.GetType().InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, shell,
+                new object[] { Path.Combine(desktop, "Table Tennis.lnk") });
+            shortcut.GetType().InvokeMember("TargetPath", BindingFlags.SetProperty, null, shortcut, new object[] { Path.Combine(target, "dist", "tabletennis_launcher.exe") });
+            shortcut.GetType().InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, shortcut, new object[] { Path.Combine(target, "dist") });
+            shortcut.GetType().InvokeMember("IconLocation", BindingFlags.SetProperty, null, shortcut, new object[] { Path.Combine(target, "dist", "tabletennis.ico") + ",0" });
+            shortcut.GetType().InvokeMember("Description", BindingFlags.SetProperty, null, shortcut, new object[] { "Table Tennis - Settings & Play" });
+            shortcut.GetType().InvokeMember("Save", BindingFlags.InvokeMethod, null, shortcut, null);
         }
         void LaunchGame() {
             string path = Path.Combine(folder.Text, "dist", "tabletennis_launcher.exe");

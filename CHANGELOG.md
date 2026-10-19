@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.5 — 2026-10-19
+
+- Added a transparent Windows desktop icon at 16, 24, 32, 48, 64, 128 and 256 pixels.
+- The installer-created desktop shortcut now uses the icon and opens the settings launcher. The launcher executable also embeds the icon.
+- Credited icon artist Gary aka POOTERMAN :) with a link to his DeviantArt profile in README and the installed credits.
+- Existing installations can run this installer in the same folder to refresh the launcher and desktop shortcut.
+
 ## v1.0.4 — 2026-10-18
 
 - Fixed apparent endless `LOADING MAIN MENU...` on first launch: the loading overlay covered the game's missing-save question, while automatic Start input prevented answering it.
