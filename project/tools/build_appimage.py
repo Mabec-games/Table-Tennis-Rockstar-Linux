@@ -1,4 +1,4 @@
-"""Build a private test AppImage from local game objects and packaging tools.
+"""Build the Linux v1.0 AppImage from local game objects and packaging tools.
 
 No downloads or uploads. Requires an older libm at link time to avoid importing
 the host's new sqrtf@GLIBC_2.43. Game libraries are checked against a glibc 2.38
@@ -155,7 +155,7 @@ def main():
     sdk_license = ROOT / '.tools/rexglue-source/LICENSE'
     if sdk_license.exists():
         copy(sdk_license, licenses / 'ReXGlue-LICENSE')
-    # Preserve notices for the local system libraries used in this private build.
+    # Preserve notices for the local system libraries used in this build.
     if shutil.which('pacman'):
         packages = set()
         for source in list(COPIED_SOURCES):
@@ -194,7 +194,7 @@ exec "$APPDIR/usr/lib/python-runtime/ld-linux-x86-64.so.2" \\
     desktop = '''[Desktop Entry]
 Type=Application
 Name=Table Tennis for Linux
-Comment=Private local test build; bring your own retail disc image
+Comment=Table Tennis for Linux v1.0; bring your own retail disc image
 Exec=AppRun
 Icon=tabletennis
 Categories=Game;SportsGame;
@@ -203,7 +203,9 @@ Terminal=false
     (APPDIR / 'tabletennis.desktop').write_text(desktop)
     copy(ROOT / 'project/launcher/assets/tux-icon.png', APPDIR / 'tabletennis.png')
     (APPDIR / '.DirIcon').symlink_to('tabletennis.png')
-    (APPDIR / 'README.txt').write_text('''Table Tennis for Linux — private local test build
+    (APPDIR / 'README.txt').write_text('''Table Tennis for Linux v1.0 — Mabec Games
+
+Linux fork of davidptrssvea/Table-Tennis-Rockstar-PC, built with ReXGlue 0.10.0.
 
 Launch the AppImage and select your own retail USA/Europe Xbox 360 ISO.
 No SDK, system Python, or system Tk installation is required.
@@ -220,8 +222,10 @@ Runtime logs: ~/.cache/tabletennis/appimage/<build-id>/logs/
 The corresponding XDG variables override these locations.
 
 Use --self-test for a headless check. Use --appimage-extract-and-run on systems
-where FUSE mounting is unavailable. This private build includes the locally
-compiled game and patched menu assets; do not upload or redistribute it.
+where FUSE mounting is unavailable. This AppImage includes the native compiled
+game, patched menu override and runtime dependencies. No ISO or XEX is included.
+Original game and branding belong to their respective owners. Project and
+dependency notices are in usr/share/licenses/tabletennis.
 ''')
     run(['desktop-file-validate', APPDIR / 'tabletennis.desktop'])
     audit = {}
@@ -241,7 +245,7 @@ compiled game and patched menu assets; do not upload or redistribute it.
         for path in (args.appimagetool, args.runtime, args.link_libm)
     }, indent=2) + '\n')
     run([APPDIR / 'AppRun', '--self-test'])
-    output = ROOT / 'dist/Table-Tennis-Linux-x86_64.AppImage'
+    output = ROOT / 'dist/Table-Tennis-Linux-v1.0-x86_64.AppImage'
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_suffix('.AppImage.new')
     run([args.appimagetool.resolve(), '--appimage-extract-and-run',

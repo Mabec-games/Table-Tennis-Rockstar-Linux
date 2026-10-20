@@ -13,9 +13,9 @@ page-query optimization, a recorded rally averaged 59.96 guest frames/s at the
 cap using RADV and native Wayland. Check guest timings when diagnosing speed:
 the UI FPS counter alone can show 60 even when guest frames run slower.
 
-## Local AppImage test build
+## Linux v1.0 AppImage
 
-`dist/Table-Tennis-Linux-x86_64.AppImage` packages the native game, corrected
+`dist/Table-Tennis-Linux-v1.0-x86_64.AppImage` packages the native game, corrected
 Xenos graphics plugin, ReXGlue runtime, launcher artwork, Python, Tcl/Tk, Vulkan
 loader and GPU enumeration utility. Players do not install the SDK or Python/Tk.
 Select your own supported retail ISO in the launcher; the ISO is not bundled.
@@ -36,11 +36,11 @@ gameplay validation on either distribution. Debian 12 and Ubuntu 22.04 are
 outside this build's compatibility target.
 
 ```bash
-./dist/Table-Tennis-Linux-x86_64.AppImage
+./dist/Table-Tennis-Linux-v1.0-x86_64.AppImage
 # Headless runtime/import check:
-./dist/Table-Tennis-Linux-x86_64.AppImage --self-test
+./dist/Table-Tennis-Linux-v1.0-x86_64.AppImage --self-test
 # If FUSE mounting is unavailable:
-./dist/Table-Tennis-Linux-x86_64.AppImage --appimage-extract-and-run
+./dist/Table-Tennis-Linux-v1.0-x86_64.AppImage --appimage-extract-and-run
 ```
 
 The launcher shares existing settings and saves with normal source launches.
@@ -60,9 +60,10 @@ Checksums and the ELF compatibility audit are saved in `build/appimage/`.
 The packaging script currently consumes the local Arch/CachyOS Python/Tk
 installation; this is a maintainer build prerequisite, not a player dependency.
 
-This is a **private test artifact**, containing locally compiled game code and
-patched game assets. Keep it in ignored `dist/` storage; do not upload it.
-An eventual public distribution needs a separate review of what may be shipped.
+The v1.0 AppImage is distributed as a separate GitHub release asset, alongside
+checksums and a source archive. It contains the native executable and patched
+menu override; it does not contain the ISO or XEX. Keep compiled binaries out
+of Git history, and never include the ISO, captures, dumps or local saves.
 
 ## Get the SDK
 
@@ -142,8 +143,8 @@ At launch, the Linux launcher prepends the selected game's directory to
 `LD_LIBRARY_PATH`, so bundled SDK runtime libraries are resolved from the player
 package rather than a developer's SDK directory. This removes the SDK install
 path as a runtime dependency; it does not remove the SDK requirement for building
-from source. The local AppImage bundles these dependencies; broader desktop
-gameplay validation and a public distribution workflow remain pending.
+from source. The release AppImage bundles these dependencies; broader desktop
+gameplay validation remains pending.
 
 It stores settings in `$XDG_CONFIG_HOME/tabletennis/settings.json` (default
 `~/.config`) and game logs in `$XDG_STATE_HOME/tabletennis/game.log` (default
@@ -209,8 +210,9 @@ GUI appearance, audio, controllers, and saves also need broader validation.
 The build tree receives the patched offline-menu assets beside the executable.
 Packaging and desktop/Steam integration are subsequent steps.
 
-Never upload the ISO, extracted assets, generated game code, or compiled game.
-Review staged files before publishing a fork.
+Never commit the ISO, extracted assets, generated game code, or compiled game.
+Only the versioned AppImage and reviewed source archive are release payloads;
+do not upload other local build output. Review staged files before publishing.
 
 ## Confirmed skin rendering fix
 

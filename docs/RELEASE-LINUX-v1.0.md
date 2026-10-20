@@ -23,14 +23,27 @@ on the tested RTX 3080 Laptop GPU and Radeon 680M configurations.
 
 ## Download and build
 
-This is a **source release**. The source ZIP contains project tools, integration,
-tests, documentation and presentation images. Build locally with your own
-supported retail USA/Europe Xbox 360 ISO following [LINUX.md](../LINUX.md).
+- **`Table-Tennis-Linux-v1.0-x86_64.AppImage`** — Linux launcher and native game.
+- **`Table-Tennis-Linux-v1.0-x86_64.AppImage.sha256`** — AppImage checksum.
+- **`Table-Tennis-Linux-Source-v1.0.zip`** — integration source, tools, tests,
+  documentation and presentation images.
+- **`SHA256SUMS.txt`** — checksums for the AppImage and source ZIP.
 
-The SDK is required by the build tools. A locally built AppImage bundles its
-runtime dependencies and does not require players to install an SDK or Python.
-No prebuilt game AppImage, ISO, extracted game archive or generated game code is
-attached to this release.
+Download the AppImage, make it executable and run it:
+
+```bash
+chmod +x Table-Tennis-Linux-v1.0-x86_64.AppImage
+./Table-Tennis-Linux-v1.0-x86_64.AppImage
+```
+
+Select your own supported retail USA/Europe Xbox 360 ISO and press Play.
+**No SDK, Python, Tk or compiler installation is required to play.**
+The AppImage contains the native executable, patched menu override and runtime
+dependencies. The ISO and XEX are not bundled.
+
+For source builds, follow the
+[Linux build guide](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/blob/linux-launcher/LINUX.md).
+The SDK is a build-time dependency only.
 
 ## Compatibility
 

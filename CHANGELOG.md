@@ -17,8 +17,8 @@ distinct.
 - Added optional CPU/graphics diagnostics and Debian/Arch launcher smoke tests.
 - Documented that Escape immediately quits the game without confirmation.
 
-The public release contains source and presentation assets only. Debian/Ubuntu
-desktop testing and clean-machine validation remain pending.
+The release provides the Linux v1.0 AppImage, checksums and a separate source
+archive. Debian/Ubuntu desktop testing and clean-machine validation remain pending.
 
 ## Upstream Windows history
 

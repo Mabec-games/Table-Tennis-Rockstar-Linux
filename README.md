@@ -35,21 +35,23 @@ started correctly with no issues reported.**
 
 ## Getting started
 
-This repository contains the integration source and local build tools. The
-tested AppImage is a local build artifact; a prebuilt game AppImage is not
-included in this source release. Build instructions are in [LINUX.md](LINUX.md).
-The SDK and compiler are needed to **build** the game, not to **run** the
-resulting AppImage.
+**[Download the Linux v1.0 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.0/Table-Tennis-Linux-v1.0-x86_64.AppImage)**
+from the [Linux v1.0 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.0).
+The release also includes a SHA-256 checksum and source ZIP.
+
+**Players do not need to install the SDK, Python, Tk or a compiler.**
+The AppImage bundles the native executable, corrected renderer and runtime.
+For developers building their own copy, see [LINUX.md](LINUX.md).
 
 You need your own unmodified **USA/Europe retail Xbox 360 Table Tennis ISO**
 (Title ID `545407DF`). The build tools verify it and open it read-only. Keep
 the ISO available: the game reads it during play.
 
-Once you have built your AppImage:
+Make the downloaded AppImage executable and start it:
 
 ```bash
-chmod +x Table-Tennis-Linux-x86_64.AppImage
-./Table-Tennis-Linux-x86_64.AppImage
+chmod +x Table-Tennis-Linux-v1.0-x86_64.AppImage
+./Table-Tennis-Linux-v1.0-x86_64.AppImage
 ```
 
 Choose the ISO, set **1080p and 60 FPS** as a starting point, and press
@@ -58,14 +60,14 @@ Choose the ISO, set **1080p and 60 FPS** as a starting point, and press
 If FUSE mounting is unavailable:
 
 ```bash
-./Table-Tennis-Linux-x86_64.AppImage --appimage-extract-and-run
+./Table-Tennis-Linux-v1.0-x86_64.AppImage --appimage-extract-and-run
 ```
 
 On the tested hybrid laptop, the Radeon 680M worked through native Wayland but
 showed a black window through X11/XWayland. For that configuration:
 
 ```bash
-SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-x86_64.AppImage
+SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.0-x86_64.AppImage
 ```
 
 This is a result from one laptop, not a requirement for all AMD systems.
@@ -132,5 +134,6 @@ original game material are separate from the source-code license.
 
 This is an independent project, unaffiliated with Rockstar Games or Take-Two.
 The original game and its branding belong to their respective owners. Supply
-your own game; no ISO, XEX, extracted retail archive, generated game functions,
-or compiled game executable is included in this source release.
+your own game ISO; no ISO or XEX is included. The source repository contains
+integration code and tools. The separate AppImage release contains the native
+compiled game, a patched menu override and bundled runtime dependencies.
