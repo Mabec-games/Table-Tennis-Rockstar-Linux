@@ -1,5 +1,27 @@
 # Changelog
 
+## Linux v1.0 — 2026-10-20
+
+First Linux release of the Mabec Games fork, based on davidptrssvea's Windows
+v1.0.5 source. Linux release tags use `linux-v1.0` to keep platform versions
+distinct.
+
+- Added native Linux build support and a Tk settings launcher with supplied
+  artwork, saved settings and Vulkan GPU selection.
+- Corrected Vulkan texture exponent-bias decoding, restoring character skin.
+- Optimized Linux memory-permission queries, retaining a legacy fallback.
+- Added local AppImage packaging with the runtime, corrected graphics plugin,
+  Python/Tk and Vulkan loader bundled; no player SDK installation is required.
+- Confirmed AppImage launcher/game operation on CachyOS and controller rumble
+  during Linux gameplay.
+- Added optional CPU/graphics diagnostics and Debian/Arch launcher smoke tests.
+- Documented that Escape immediately quits the game without confirmation.
+
+The public release contains source and presentation assets only. Debian/Ubuntu
+desktop testing and clean-machine validation remain pending.
+
+## Upstream Windows history
+
 ## v1.0.5 — 2026-10-19
 
 - Added a transparent Windows desktop icon at 16, 24, 32, 48, 64, 128 and 256 pixels.

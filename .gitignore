@@ -1,5 +1,7 @@
 # Original game material and all local generated/runtime output stay private.
 *.iso
+*.[iI][sS][oO]
+*.[xX][eE][xX]
 *.xex
 *.rpf
 *.bin
@@ -9,6 +11,8 @@
 *.obj
 *.pdb
 *.zip
+*.AppImage
+*.appimage
 *.log
 *.pyc
 __pycache__/

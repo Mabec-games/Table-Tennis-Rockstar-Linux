@@ -1,121 +1,136 @@
-# Rockstar Games presents Table Tennis — Windows PC Recompilation
+![Mabec Games — Table Tennis for Linux](docs/images/mabec.png)
 
-Bring the Xbox 360 classic to your PC with **up to 4K output, higher internal 3D resolution, high-refresh framerate options, and optional image filters**. The game code is recompiled to native Windows x64 with ReXGlue SDK v0.10.0 and DirectX 12 rendering.
+# Rockstar Games presents Table Tennis — Linux v1.0
 
-Build and play from **your own Xbox 360 disc image**. A graphical installer prepares the required components and creates the local game build for you.
+**Native Linux port by Mabec Games, forked from
+[davidptrssvea's Windows PC recompilation](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC).**
 
-## Get started
+Bring your own Xbox 360 disc image and play with native Linux execution,
+Vulkan rendering, a graphical settings launcher, and controller support.
+The Windows project's recompilation, ISO support, offline menu and startup
+improvements form the foundation of this fork. ReXGlue SDK v0.10.0 provides
+the runtime and renderer.
 
-1. Download **[Install-Table-Tennis.exe — installer preview](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC/releases/download/v1.0.5/Install-Table-Tennis.exe)**.
-2. Open it, choose your retail **Table Tennis ISO**, allow the required components, and click **Install**.
-3. When it says **Ready to play**, click **Play**. A desktop shortcut is also created when Windows permits it.
+**The Linux AppImage has been tested on CachyOS: both the launcher and game
+started correctly with no issues reported.**
 
-On the first launch, **Saved Game** may ask whether to create a save. Choose **A** to create one or **B** to continue without saving, then follow any further on-screen confirmation. This question is now visible and interactive during intro skipping.
+> **Pressing Escape immediately quits the game, without a confirmation dialog.**
 
-**You do not need to install Python, compilers or SDKs manually. You do not need a command prompt or the source ZIP.**
+## What's in Linux v1.0
 
-First setup needs internet access, several GB of free space and time to download components and build the game. If Microsoft build components are missing, Windows may ask for administrator permission. Nothing restarts Windows automatically; if a restart is required, the installer tells you to reopen it afterward.
+- **Linux settings launcher** with saved ISO selection, GPU selection, resolution,
+  frame-rate limit, fullscreen/windowed mode and FPS overlay.
+- **Native Vulkan rendering**, including the correction for dark character skin.
+- **Controller support and working in-game rumble**, confirmed during gameplay.
+- **720p, 1080p, 1440p and 4K presets**, with FXAA/FXAA Extreme and
+  FSR, CAS or bilinear presentation options.
+- **Faster Linux memory-permission queries** on supported kernels, with a
+  fallback for older kernels.
+- **Local AppImage packaging**, bundling the game runtime, graphics plugin,
+  Python, Tcl/Tk and launcher. Running that AppImage requires **no separate
+  ReXGlue SDK, Python or Tk installation**.
+- **Offline menu and intro improvements** inherited from the Windows project.
 
-## What you need
+![Table Tennis gameplay on Linux](docs/images/SCREEN1.png)
 
-- Windows 10/11 **x64**, an AVX2 CPU and a DirectX 12 GPU.
-- Your own unmodified **USA/Europe retail Xbox 360 Table Tennis ISO**, Title ID `545407DF`.
-- A writable installation folder. The default is `%LOCALAPPDATA%\TableTennisPC`.
+## Getting started
 
-The ISO is checked before installing large compiler components and is always opened read-only. Other game versions are rejected. Keep your ISO available after installation: the game still reads it during play.
+This repository contains the integration source and local build tools. The
+tested AppImage is a local build artifact; a prebuilt game AppImage is not
+included in this source release. Build instructions are in [LINUX.md](LINUX.md).
+The SDK and compiler are needed to **build** the game, not to **run** the
+resulting AppImage.
 
-## PC enhancements
+You need your own unmodified **USA/Europe retail Xbox 360 Table Tennis ISO**
+(Title ID `545407DF`). The build tools verify it and open it read-only. Keep
+the ISO available: the game reads it during play.
 
-### Sharper 3D rendering — up to 4K
+Once you have built your AppImage:
 
-Choose your display preset directly in the game launcher:
-
-| Preset | Output resolution | Internal 3D rendering scale |
-|---|---|---|
-| **720p** | 1280 × 720 | 1× |
-| **1080p / Full HD** | 1920 × 1080 | 1×, presented with your chosen image filter |
-| **1440p / QHD** | 2560 × 1440 | 2× on each axis |
-| **4K / Ultra HD** | 3840 × 2160 | 3× on each axis |
-
-The 1440p and 4K presets raise the internal rendering scale as well as the output size. The 1080p preset keeps 1× internal rendering and uses the selected presentation filter for output scaling.
-
-### High-refresh display options
-
-Select **60, 120, 144 or 240 FPS targets**, or choose **Unlocked** for uncapped presentation. A 60 FPS VSync option is available, while higher-framerate modes enable the variable-refresh/tearing presentation path for compatible displays, including suitably configured G-Sync and FreeSync setups.
-
-Pick the resolution and framerate combination that suits your GPU and monitor. Achieved FPS depends on your hardware, scene and settings; these are selectable targets rather than guaranteed benchmark results.
-
-### Image filters and anti-aliasing
-
-- **FXAA** and **FXAA Extreme** options for edge smoothing, plus an Off setting.
-- **AMD FidelityFX FSR**, **Contrast Adaptive Sharpening (CAS)** or **Bilinear** presentation options.
-- **Fullscreen or windowed mode**, configured before launching the game.
-
-### A more convenient PC experience
-
-- **Graphical settings launcher:** choose your ISO, resolution, framerate, display mode and image filters in one place; settings are saved for the next launch.
-- **Live FPS and frame-time overlay:** toggle it with **F10** while playing.
-- **Quick exit:** press **Escape** to return to Windows.
-- **SDL3 gamepad support**, with controller detection active before the startup intro.
-
-### Offline menu and startup improvements
-
-- Xbox Live removed from the main menu to avoid the unavailable online screen. Tournament, Exhibition, Training Mode, Options and Extras remain available.
-- A gamepad button immediately stops the startup intro and continues to the main menu after loading, without another Start press.
-- A large, centered, antialiased **LOADING MAIN MENU...** transition while the menu initializes. The skip press cannot accidentally select a menu item.
-
-## If installation stops
-
-**Music plays but `LOADING MAIN MENU...` never disappears?** In v1.0.3 and earlier, the loading overlay could hide the first-run save question and block the controls needed to answer it. Download the **v1.0.5 installer**, choose the same ISO and installation folder, and rebuild. Your existing saves are retained. Afterward, answer the visible **Saved Game** question if it appears.
-
-**Already installed, but starting the game says `--game_data_root does not exist` even though your ISO exists?** Versions 1.0.1/1.0.2 could build with the SDK's directory-only startup code. Download the **v1.0.5 installer** above, choose your ISO and the **same installation folder**, then run Install / Recheck to rebuild with ISO support. You do not need to delete your installation. Start through **tabletennis_launcher.exe** afterward; the ISO must remain available.
-
-Click **Open log** in the installer. You can retry after fixing the reported issue; downloaded components are cached. If Windows security blocks a required component, installation stops and security settings remain unchanged.
-
-The installer is not code-signed. Automatic installation of missing Microsoft components has not yet been tested on a completely clean Windows machine. The installer backend was tested with its downloaded portable Python runtime and existing compiler/SDK installations. The separate ReXGlue download was previously blocked by security software on the development PC; that first-download path remains unverified.
-
-Existing local saves and graphics settings are retained during repair; the selected ISO path is updated. First-run save creation and startup with that save were checked in isolated profiles; gameplay progress save/load was not fully revalidated.
-
-## How it works
-
-The small installer contains project source and patch instructions. It downloads a checksum-verified, isolated Python runtime and checks for suitable build tools. If needed, it starts Microsoft's signed Visual Studio 2022 Build Tools installer with the required C++/Windows SDK/CMake/Ninja/Clang components selected. The screen asks permission for component downloads and installation before starting.
-
-It then obtains ReXGlue SDK v0.10.0, checks its pinned SHA-256, reads the supported executable and menu archive from your ISO, generates and patches the game code, and builds everything **on your PC**. No retail menu archive, XEX, ISO, generated game functions or prebuilt game executable is included in the public downloads. `Install-Table-Tennis.exe` is our own installer, not the game executable.
-
-Locally generated files stay under the installation folder. Do not upload `dist`, `private_work` or `project/generated`.
-
-<details>
-<summary>Developer / advanced installation</summary>
-
-The **Table-Tennis-Local-Build-v1.0.5.zip** asset is the source package for developers. It is not required by players using the installer.
-
-For manual builds, install 64-bit Python 3.10+, Visual Studio 2022 C++ Build Tools with Windows SDK/CMake/Ninja, and Clang 19+. Clang can be standalone or included in Visual Studio. Then use:
-
-```powershell
-.\setup.ps1 -IsoPath 'E:\Games\TableTennis.iso' -SdkPath 'E:\Tools\rexglue-sdk-0.10.0' -NoDownload
+```bash
+chmod +x Table-Tennis-Linux-x86_64.AppImage
+./Table-Tennis-Linux-x86_64.AppImage
 ```
 
-`SdkPath` must contain `bin\rexglue.exe` and `lib\cmake\rexglue`. Add `-Jobs 2` for lower memory use or `-PrepareOnly` to stop after code generation and patches. The installer can also use a supplied SDK via its optional `--sdk PATH` argument.
+Choose the ISO, set **1080p and 60 FPS** as a starting point, and press
+**Play Table Tennis**. Existing launcher settings are reused.
 
-Checks and source packaging:
+If FUSE mounting is unavailable:
 
-```powershell
-py -3 -m unittest discover -s tests -v
-py -3 project/tools/package_source.py --audit-index
-py -3 project/tools/package_source.py --output 'E:\ReleaseOutput'
-powershell -File project/tools/build_installer.ps1 -SourceZip 'E:\ReleaseOutput\Table-Tennis-Local-Build-v1.0.5.zip' -OutputPath 'E:\ReleaseOutput\Install-Table-Tennis.exe'
+```bash
+./Table-Tennis-Linux-x86_64.AppImage --appimage-extract-and-run
 ```
 
-The installer builder validates every embedded source file against the public allowlist before compilation. It rejects extra or altered payload files. Native patch rules store offsets, hashes and replacement text rather than removed original function bodies. See [implementation and validation](reports/LOCAL_BUILD.md) and [changelog](CHANGELOG.md).
+On the tested hybrid laptop, the Radeon 680M worked through native Wayland but
+showed a black window through X11/XWayland. For that configuration:
 
-</details>
+```bash
+SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-x86_64.AppImage
+```
 
-## License and rights
+This is a result from one laptop, not a requirement for all AMD systems.
 
-### Desktop icon credit
+## Compatibility and testing
 
-Desktop icon artwork by **Gary aka POOTERMAN :)** — [visit POOTERMAN on DeviantArt](https://www.deviantart.com/pooterman). Thank you for the artwork! The supplied image was converted into a Windows icon in multiple sizes for the launcher and desktop shortcut. The artwork is credited separately and is not covered by this project's MIT license.
+| Platform or configuration | Status |
+| --- | --- |
+| CachyOS, an Arch-based distribution | AppImage launcher and game confirmed working |
+| NVIDIA RTX 3080 Laptop GPU, Ryzen 9 6900HS | Recorded 1080p gameplay at approximately 60 guest frames/s |
+| AMD Radeon 680M, Ryzen 9 6900HS, native Wayland | Recorded 1080p gameplay near 60 guest frames/s, with a short dip in the sample |
+| Other current Arch installations | Compatibility target; broader testing needed |
+| Debian 13+ and Ubuntu 24.04+ | AppImage compatibility targets; desktop gameplay testing pending |
 
-Project-authored integration, installer and tools use the [MIT license](LICENSE). Adapted ReXGlue SDK headers, the ISO application adapter and SDK-derived CMake integration retain their BSD 3-Clause notices; see [ReXGlue license](licenses/ReXGlue/LICENSE.txt). [SDL's notice](licenses/SDL3/LICENSE.txt) is retained. Downloaded components have their own licenses: [Microsoft](https://visualstudio.microsoft.com/license-terms/) and [Python](https://docs.python.org/3/license.html).
+The current AppImage build targets **x86-64-v3 CPUs, Linux 6.1 or newer and a
+working Vulkan graphics driver**. Debian 12 and Ubuntu 22.04 are outside this
+build's target. Clean-machine testing remains open.
 
-Rockstar Games and Take-Two retain rights to their original game and material. This project is independent and unaffiliated. No project license grants rights to the original game. Local generation reduces what this project distributes; it is **not a guarantee of legal compliance**. You must have the necessary rights to use and process your copy.
+The 1440p and 4K presets increase internal rendering resolution. On the tested
+laptop, 1440p ran noticeably slower than 1080p; turning off FXAA did not remove
+that slowdown. Higher frame-rate choices are selectable limits, not verified
+performance promises. Start at 1080p/60 FPS.
+
+See [hardware validation](docs/linux-hardware-validation.md) for the evidence
+and limitations. The repository includes Debian/Arch launcher smoke tests;
+these do not replace desktop graphics testing.
+
+## Controls and local files
+
+| Control | Action |
+| --- | --- |
+| **Escape** | **Immediately quits the game — no confirmation dialog** |
+| **F10** | Toggle the FPS/frame-time overlay |
+| Gamepad | Gameplay controls, intro skipping and supported controller rumble |
+
+If a first-run **Saved Game** prompt appears, answer it with the gamepad.
+
+Launcher settings are stored in `~/.config/tabletennis/settings.json`.
+Saves use `~/.local/share/tabletennis`. Launcher output goes to
+`~/.local/state/tabletennis/game.log`; AppImage runtime logs are under
+`~/.cache/tabletennis/appimage/<build-id>/logs/`. The corresponding XDG
+environment variables override these defaults.
+
+## Credits
+
+- **Windows recompilation and original integration:** [davidptrssvea](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC).
+  For the Windows version and installer, visit that upstream project.
+- **Linux port, launcher presentation and testing:** Mabec Games.
+- **Recompilation framework and runtime:** [ReXGlue](https://github.com/rexglue/rexglue-sdk).
+- **Windowing, input and controller support:** SDL3.
+- **Original Windows icon:** Gary aka POOTERMAN :) —
+  [artwork credit](licenses/Icon/CREDITS.txt).
+- Presentation artwork and the gameplay screenshot were supplied by Mabec Games.
+  See [artwork credits](licenses/LinuxArtwork/CREDITS.md).
+
+<p align="center">
+  <img src="docs/images/TT_launcher.png" alt="Mabec Games Table Tennis Linux PC box artwork" width="360">
+</p>
+
+Project-authored integration and tools retain the [MIT license](LICENSE).
+ReXGlue-derived files retain their [BSD notices](licenses/ReXGlue/LICENSE.txt);
+the [SDL notice](licenses/SDL3/LICENSE.txt) is also retained. Artwork and
+original game material are separate from the source-code license.
+
+This is an independent project, unaffiliated with Rockstar Games or Take-Two.
+The original game and its branding belong to their respective owners. Supply
+your own game; no ISO, XEX, extracted retail archive, generated game functions,
+or compiled game executable is included in this source release.

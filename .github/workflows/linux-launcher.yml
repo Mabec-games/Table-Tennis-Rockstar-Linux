@@ -1,0 +1,39 @@
+name: Linux launcher smoke tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  launcher:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: debian
+            image: debian:trixie
+          - distro: arch
+            image: archlinux:latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install launcher dependencies
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE:/workspace" -w /workspace \
+            '${{ matrix.image }}' bash -euo pipefail -c '
+              if [[ "${{ matrix.distro }}" == debian ]]; then
+                apt-get update
+                DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-tk vulkan-tools
+              else
+                pacman -Syu --noconfirm --needed python tk vulkan-tools
+              fi
+              python3 -c "import tkinter"
+              python3 -c "compile(open(\"project/launcher/launcher_linux.py\").read(), \"launcher_linux.py\", \"exec\")"
+              bash -n launch-linux.sh setup-linux.sh fetch-sdk-linux.sh profile-gameplay.sh profile-amd.sh analyse-renderdoc.sh
+              python3 -m unittest discover -s tests -v
+              python3 project/tools/package_source.py --audit-index
+              scratch=$(mktemp -d)
+              mkdir -p "$scratch/config"
+              touch "$scratch/test.iso"
+              XDG_CONFIG_HOME="$scratch/config" bash launch-linux.sh --dry-run --iso "$scratch/test.iso"
+            '

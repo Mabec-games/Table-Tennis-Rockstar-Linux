@@ -6,10 +6,12 @@
 #include <rex/filesystem.h>
 #include "offline_menu_device.h"
 #include "intro_skip.h"
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
+#endif
 #include <rex/logging.h>
 #include <rex/memory.h>
 #include <rex/rex_app.h>
@@ -241,7 +243,9 @@ class TabletennisApp : public rex::ReXApp {
     if (target_hz != 60) {
       // High refresh rate / uncapped presentation via D3D12 tearing
       rex::cvar::SetFlagByName("vsync", "false");
+#ifdef _WIN32
       rex::cvar::SetFlagByName("d3d12_allow_variable_refresh_rate_and_tearing", "true");
+#endif
       REXLOG_INFO("TabletennisApp::OnPreSetup - High Framerate Mode: target {} FPS (vsync=false, guest_vblank=60Hz)", target_hz);
     } else {
       rex::cvar::SetFlagByName("vsync", "true");
@@ -256,9 +260,13 @@ class TabletennisApp : public rex::ReXApp {
     if (vfs) {
       vfs->RegisterSymbolicLink("cache:", "\\Device\\Harddisk0\\Cache0");
 
+#ifdef _WIN32
       wchar_t exe_path_buf[MAX_PATH];
       GetModuleFileNameW(NULL, exe_path_buf, MAX_PATH);
       std::filesystem::path exe_dir = std::filesystem::path(exe_path_buf).parent_path();
+#else
+      const auto exe_dir = std::filesystem::canonical("/proc/self/exe").parent_path();
+#endif
       std::filesystem::path flash_override = exe_dir / "assets" / "resource" / "flash";
       if (std::filesystem::exists(flash_override / "flash.rpf")) {
         if (auto* root = vfs->ResolvePath("game:")) {
@@ -283,16 +291,28 @@ class TabletennisApp : public rex::ReXApp {
     // Keep the regular overlay font first. The loading message gets its own
     // TrueType face baked at 3x size, with extra raster resolution for DPI.
     if (atlas->Fonts.empty()) atlas->AddFontDefault();
+#ifdef _WIN32
     wchar_t windows_dir[MAX_PATH]{};
     if (!GetWindowsDirectoryW(windows_dir, MAX_PATH)) return;
+#endif
     ImFontConfig config;
     config.OversampleH = 2;
     config.OversampleV = 2;
     config.PixelSnapH = false;
     config.RasterizerDensity = 2.0f;
     static const ImWchar ranges[] = {0x20, 0x7E, 0};
-    for (const auto* filename : {L"seguisb.ttf", L"segoeui.ttf", L"arial.ttf"}) {
-      const auto path = std::filesystem::path(windows_dir) / L"Fonts" / filename;
+#ifdef _WIN32
+    const std::filesystem::path font_paths[] = {
+      std::filesystem::path(windows_dir) / L"Fonts/seguisb.ttf",
+      std::filesystem::path(windows_dir) / L"Fonts/segoeui.ttf",
+      std::filesystem::path(windows_dir) / L"Fonts/arial.ttf"};
+#else
+    const std::filesystem::path font_paths[] = {
+      "/usr/share/fonts/TTF/DejaVuSans.ttf",
+      "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+      "/usr/share/fonts/liberation-sans/LiberationSans-Regular.ttf"};
+#endif
+    for (const auto& path : font_paths) {
       if (!std::filesystem::exists(path)) continue;
       loading_font_ = atlas->AddFontFromFileTTF(path.string().c_str(), 39.0f, &config, ranges);
       if (loading_font_) {
@@ -320,9 +340,9 @@ class TabletennisApp : public rex::ReXApp {
       }
     });
 
-    // Hotkey ESC quits game cleanly to Windows
-    rex::ui::RegisterBind("bind_quit_game", "Escape", "Quit Game to Windows", [this] {
-      REXLOG_INFO("ESC pressed. Exiting cleanly to Windows...");
+    // Hotkey ESC quits the game cleanly.
+    rex::ui::RegisterBind("bind_quit_game", "Escape", "Quit Game", [this] {
+      REXLOG_INFO("ESC pressed. Exiting cleanly...");
       if (window()) {
         window()->RequestClose();
       } else {
