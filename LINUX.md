@@ -1,4 +1,4 @@
-# Table Tennis for Linux v1.0 — build and runtime guide
+# Table Tennis for Linux v1.1 — build and runtime guide
 
 Building the Linux game from source uses Python 3.10+ and the native ReXGlue
 0.10.0 SDK. The launcher does not build the game and should not need an SDK
@@ -13,22 +13,23 @@ page-query optimization, a recorded rally averaged 59.96 guest frames/s at the
 cap using RADV and native Wayland. Check guest timings when diagnosing speed:
 the UI FPS counter alone can show 60 even when guest frames run slower.
 
-## Linux v1.0 AppImage
+## Linux v1.1 AppImage
 
-`dist/Table-Tennis-Linux-v1.0-x86_64.AppImage` packages the native game, corrected
+`dist/Table-Tennis-Linux-v1.1-x86_64.AppImage` packages the native game, corrected
 Xenos graphics plugin, ReXGlue runtime, launcher artwork, Python, Tcl/Tk, Vulkan
 loader and GPU enumeration utility. Players do not install the SDK or Python/Tk.
 Select your own supported retail ISO in the launcher; the ISO is not bundled.
 **Pressing Escape immediately quits the game, without a confirmation dialog.**
 
-On 2026-10-20, the user confirmed that this AppImage launched both the launcher
+On 2026-10-20, the user confirmed that the AppImage launched both the launcher
 and game correctly, with no issues, on the CachyOS (Arch-based) test laptop.
 Clean-machine and Debian/Ubuntu desktop testing remain pending.
 
-This build targets current Arch, Debian 13+, and Ubuntu 24.04+ with an x86-64-v3
-CPU, Linux 6.1+, and a working Vulkan driver. Native game/library imports are
-checked against glibc 2.38. Python has a private loader and libc, used only by
-the launcher; that libc is not inherited by the game or its GPU drivers.
+This build targets SteamOS 3.5+ (Steam Deck), current Arch, Debian 13+, and
+Ubuntu 24.04+ with an x86-64-v3 CPU, Linux 6.1+, and a working Vulkan driver.
+Native game/library imports are checked against glibc 2.38. Python has a private
+loader and libc, used only by the launcher; that libc is not inherited by the
+game or its GPU drivers.
 Debian 13 ships [glibc 2.41](https://packages.debian.org/en/trixie/libs/libc6);
 Ubuntu 24.04 ships [glibc 2.39](https://packages.ubuntu.com/noble/libc6).
 These requirements establish a compatibility target, not completed desktop
@@ -36,11 +37,11 @@ gameplay validation on either distribution. Debian 12 and Ubuntu 22.04 are
 outside this build's compatibility target.
 
 ```bash
-./dist/Table-Tennis-Linux-v1.0-x86_64.AppImage
+./dist/Table-Tennis-Linux-v1.1-x86_64.AppImage
 # Headless runtime/import check:
-./dist/Table-Tennis-Linux-v1.0-x86_64.AppImage --self-test
+./dist/Table-Tennis-Linux-v1.1-x86_64.AppImage --self-test
 # If FUSE mounting is unavailable:
-./dist/Table-Tennis-Linux-v1.0-x86_64.AppImage --appimage-extract-and-run
+./dist/Table-Tennis-Linux-v1.1-x86_64.AppImage --appimage-extract-and-run
 ```
 
 The launcher shares existing settings and saves with normal source launches.
@@ -60,7 +61,7 @@ Checksums and the ELF compatibility audit are saved in `build/appimage/`.
 The packaging script currently consumes the local Arch/CachyOS Python/Tk
 installation; this is a maintainer build prerequisite, not a player dependency.
 
-The v1.0 AppImage is distributed as a separate GitHub release asset, alongside
+The v1.1 AppImage is distributed as a separate GitHub release asset, alongside
 checksums and a source archive. It contains the native executable and patched
 menu override; it does not contain the ISO or XEX. Keep compiled binaries out
 of Git history, and never include the ISO, captures, dumps or local saves.
@@ -169,13 +170,16 @@ It checks Python/Tkinter availability, shell syntax, launcher settings tests, an
 a no-launch argument-generation run. This does not replace a gameplay test on each
 distribution's GPU drivers and desktop environment.
 
-The Linux executable now accelerates ReXGlue's page-permission queries using
-the kernel's `PROCMAP_QUERY` ioctl, when supported by the build headers and
-running kernel (Linux 6.11+). This avoids scanning `/proc/self/maps` on each GPU
-write-watch fault. Permissions are queried live; memory protection and GPU cache
-invalidation remain enabled. Unsupported systems use the original SDK lookup.
-For a diagnostic comparison, `TABLETENNIS_LEGACY_MEMORY_QUERY=1 bash launch-linux.sh`
-restores that original lookup without rebuilding. The integration checks run with
+The Linux executable accelerates ReXGlue's memory-management and
+page-permission queries (`QueryProtect`, `Protect`, `AllocFixed`, `DeallocFixed`,
+`MapFileView`, `UnmapFileView`) using a lock-free user-space radix page table
+for all guest memory mappings, plus the kernel's `PROCMAP_QUERY` ioctl (on
+Linux 6.11+) or a zero-allocation stack-buffer `/proc/self/maps` parser (on
+Linux 6.1–6.10, including SteamOS 3.5/3.6 on Steam Deck) for untracked mappings.
+This avoids scanning `/proc/self/maps` on each GPU write-watch fault and guest
+heap commit regardless of kernel version. For a diagnostic comparison,
+`TABLETENNIS_LEGACY_MEMORY_QUERY=1 bash launch-linux.sh` restores the original
+SDK lookup without rebuilding. The integration checks run with
 `python3 tests/test_linux_memory_query.py` against the installed Linux SDK.
 
 On the local Ryzen 9 6900HS / Radeon 680M laptop, `bash profile-amd.sh` selects

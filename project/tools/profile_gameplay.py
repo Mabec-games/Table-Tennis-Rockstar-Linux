@@ -157,7 +157,7 @@ def analyse(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--analyse', type=Path, help='Resolve an existing recording without launching')
-    parser.add_argument('--resolution', choices=('720p', '1080p', '1440p', '4K'),
+    parser.add_argument('--resolution', choices=('720p', '800p', '800p (Steam Deck)', '1080p', '1440p', '4K'),
                         help='Override resolution for this run only')
     parser.add_argument('--aa', choices=('none', 'fxaa', 'fxaa_extreme'),
                         help='Override anti-aliasing for this run only')
@@ -173,6 +173,7 @@ def main():
         settings.update({key: saved[key] for key in settings if key in saved})
     if args.resolution:
         settings['resolution'] = args.resolution
+    settings['resolution'] = launcher.normalize_resolution(settings['resolution'])
     if args.aa:
         settings['aa'] = args.aa
     os.environ['TT_CPU_PROFILE'] = '1'

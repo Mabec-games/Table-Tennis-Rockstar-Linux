@@ -1,5 +1,28 @@
 # Changelog
 
+## Linux v1.1 — 2026-10-21
+
+SteamOS / Steam Deck performance and resolution update for the Mabec Games
+Linux fork (`linux-v1.1`).
+
+- **Kernel-independent O(1) guest memory tracking (`linux_memory_query.cpp`):**
+  Replaced the Linux 6.11+-only `PROCMAP_QUERY` requirement for guest memory
+  with a lock-free user-space radix page table interposing `MapFileView`,
+  `UnmapFileView`, `AllocFixed`, `DeallocFixed`, `Protect`, and `QueryProtect`.
+  Eliminates `/proc/self/maps` text scanning on SteamOS 3.5/3.6 (Linux 6.1/6.5)
+  and Ubuntu 24.04 GA (Linux 6.8) during GPU write-watch `SIGSEGV` faults,
+  guest heap commits (`AllocFixed`), and old-protection queries (`Protect`),
+  with a zero-allocation stack-buffer `/proc/self/maps` fallback for untracked
+  addresses on pre-6.11 kernels.
+- **Steam Deck `800p (Steam Deck)` (`1280x800`) resolution preset:**
+  Added a dedicated `1280x800` (`1x` internal Xenos EDRAM scale) preset and
+  `800p` CLI/config alias to the Linux launcher and profiler.
+- **Validation status:**
+  User confirmed the v1.1 AppImage and new `800p (Steam Deck)` launcher option
+  work on CachyOS, and integration tests verified the pre-6.11 SteamOS memory
+  path (`TABLETENNIS_DISABLE_PROCMAP_QUERY=1`). Physical Steam Deck hardware
+  validation remains pending.
+
 ## Linux v1.0 — 2026-10-20
 
 First Linux release of the Mabec Games fork, based on davidptrssvea's Windows

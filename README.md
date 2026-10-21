@@ -1,6 +1,6 @@
 ![Mabec Games — Table Tennis for Linux](docs/images/mabec.png)
 
-# Rockstar Games presents Table Tennis — Linux v1.0
+# Rockstar Games presents Table Tennis — Linux v1.1
 
 **Native Linux port by Mabec Games, forked from
 [davidptrssvea's Windows PC recompilation](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC).**
@@ -16,16 +16,19 @@ started correctly with no issues reported.**
 
 > **Pressing Escape immediately quits the game, without a confirmation dialog.**
 
-## What's in Linux v1.0
+## What's in Linux v1.1
 
+- **Kernel-independent O(1) guest memory tracking** across `QueryProtect`,
+  `Protect`, `AllocFixed`, `DeallocFixed`, `MapFileView`, and `UnmapFileView`,
+  eliminating `/proc/self/maps` slowdowns on Linux 6.1–6.10 kernels (including
+  SteamOS 3.5/3.6 on Steam Deck and Ubuntu 24.04 GA) as well as Linux 6.11+.
+- **Dedicated `800p (Steam Deck)` (`1280x800`) resolution preset** alongside
+  **720p, 1080p, 1440p and 4K**, with FXAA/FXAA Extreme and FSR, CAS or
+  bilinear presentation options.
 - **Linux settings launcher** with saved ISO selection, GPU selection, resolution,
   frame-rate limit, fullscreen/windowed mode and FPS overlay.
 - **Native Vulkan rendering**, including the correction for dark character skin.
 - **Controller support and working in-game rumble**, confirmed during gameplay.
-- **720p, 1080p, 1440p and 4K presets**, with FXAA/FXAA Extreme and
-  FSR, CAS or bilinear presentation options.
-- **Faster Linux memory-permission queries** on supported kernels, with a
-  fallback for older kernels.
 - **Local AppImage packaging**, bundling the game runtime, graphics plugin,
   Python, Tcl/Tk and launcher. Running that AppImage requires **no separate
   ReXGlue SDK, Python or Tk installation**.
@@ -35,8 +38,8 @@ started correctly with no issues reported.**
 
 ## Getting started
 
-**[Download the Linux v1.0 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.0/Table-Tennis-Linux-v1.0-x86_64.AppImage)**
-from the [Linux v1.0 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.0).
+**[Download the Linux v1.1 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.1/Table-Tennis-Linux-v1.1-x86_64.AppImage)**
+from the [Linux v1.1 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.1).
 The release also includes a SHA-256 checksum and source ZIP.
 
 **Players do not need to install the SDK, Python, Tk or a compiler.**
@@ -50,24 +53,25 @@ the ISO available: the game reads it during play.
 Make the downloaded AppImage executable and start it:
 
 ```bash
-chmod +x Table-Tennis-Linux-v1.0-x86_64.AppImage
-./Table-Tennis-Linux-v1.0-x86_64.AppImage
+chmod +x Table-Tennis-Linux-v1.1-x86_64.AppImage
+./Table-Tennis-Linux-v1.1-x86_64.AppImage
 ```
 
-Choose the ISO, set **1080p and 60 FPS** as a starting point, and press
-**Play Table Tennis**. Existing launcher settings are reused.
+Choose the ISO, set **800p (Steam Deck)** on Steam Deck or **1080p** on desktop
+with **60 FPS** as a starting point, and press **Play Table Tennis**. Existing
+launcher settings are reused.
 
 If FUSE mounting is unavailable:
 
 ```bash
-./Table-Tennis-Linux-v1.0-x86_64.AppImage --appimage-extract-and-run
+./Table-Tennis-Linux-v1.1-x86_64.AppImage --appimage-extract-and-run
 ```
 
 On the tested hybrid laptop, the Radeon 680M worked through native Wayland but
 showed a black window through X11/XWayland. For that configuration:
 
 ```bash
-SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.0-x86_64.AppImage
+SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.1-x86_64.AppImage
 ```
 
 This is a result from one laptop, not a requirement for all AMD systems.
@@ -76,9 +80,10 @@ This is a result from one laptop, not a requirement for all AMD systems.
 
 | Platform or configuration | Status |
 | --- | --- |
-| CachyOS, an Arch-based distribution | AppImage launcher and game confirmed working |
+| CachyOS, an Arch-based distribution | AppImage v1.1 launcher and game confirmed working |
 | NVIDIA RTX 3080 Laptop GPU, Ryzen 9 6900HS | Recorded 1080p gameplay at approximately 60 guest frames/s |
 | AMD Radeon 680M, Ryzen 9 6900HS, native Wayland | Recorded 1080p gameplay near 60 guest frames/s, with a short dip in the sample |
+| SteamOS / Steam Deck (Linux 6.1/6.5) | User-space page table (`TABLETENNIS_DISABLE_PROCMAP_QUERY=1`) and `800p (Steam Deck)` preset verified in tests/launcher; physical Steam Deck gameplay testing pending |
 | Other current Arch installations | Compatibility target; broader testing needed |
 | Debian 13+ and Ubuntu 24.04+ | AppImage compatibility targets; desktop gameplay testing pending |
 

@@ -12,6 +12,7 @@ LINUX_FILES = {
     'profile-amd.sh', 'profile-gameplay.sh', 'analyse-renderdoc.sh',
     '.github/workflows/linux-launcher.yml',
     'docs/linux-hardware-validation.md', 'docs/RELEASE-LINUX-v1.0.md',
+    'docs/RELEASE-LINUX-v1.1.md',
     'docs/images/mabec.png', 'docs/images/SCREEN1.png', 'docs/images/TT_launcher.png',
     'licenses/LinuxArtwork/CREDITS.md',
     'project/launcher/launcher_linux.py', 'project/launcher/appimage_entry.py',
@@ -65,7 +66,7 @@ def package(output):
     files = audit()
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    path = output / 'Table-Tennis-Linux-Source-v1.0.zip'
+    path = output / 'Table-Tennis-Linux-Source-v1.1.zip'
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name in files:
             archive.write(ROOT / name, name)

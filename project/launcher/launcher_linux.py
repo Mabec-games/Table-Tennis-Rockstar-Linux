@@ -10,14 +10,20 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'tabletennis/settings.json'
-PRESETS = {'720p': (1280, 720, 1), '1080p': (1920, 1080, 1),
-           '1440p': (2560, 1440, 2), '4K': (3840, 2160, 3)}
+PRESETS = {'720p': (1280, 720, 1), '800p (Steam Deck)': (1280, 800, 1),
+           '1080p': (1920, 1080, 1), '1440p': (2560, 1440, 2),
+           '4K': (3840, 2160, 3)}
+RESOLUTION_ALIASES = {'800p': '800p (Steam Deck)'}
 DEFAULTS = dict(iso='', resolution='1080p', framerate='60', aa='none', post='fsr',
                 fullscreen=False, show_fps=False, gpu='auto')
 
 
+def normalize_resolution(value):
+    return RESOLUTION_ALIASES.get(value, value)
+
+
 def arguments(settings):
-    width, height, scale = PRESETS[settings['resolution']]
+    width, height, scale = PRESETS[normalize_resolution(settings['resolution'])]
     if settings['framerate'] not in ('60', '120', '144', '240', '0'):
         raise ValueError('Unsupported framerate')
     if settings['aa'] not in ('none', 'fxaa', 'fxaa_extreme') or settings['post'] not in ('fsr', 'cas', 'bilinear'):
@@ -149,7 +155,8 @@ def main():
                         help='Dump shaders and debug logs locally under ignored build output')
     parser.add_argument('--readback-resolve', choices=('none', 'some', 'full'),
                         help='Temporary GPU render-to-texture readback diagnostic')
-    parser.add_argument('--resolution', choices=tuple(PRESETS), help='Override resolution for this launch')
+    parser.add_argument('--resolution', choices=tuple(PRESETS) + tuple(RESOLUTION_ALIASES),
+                        help='Override resolution for this launch')
     parser.add_argument('--vulkan-device', type=int, choices=range(16), help='Temporary Vulkan GPU index override')
     parser.add_argument('--texture-3d-workaround', action='store_true',
                         help='Test SDK compatibility wrappers for problematic 3D textures')
@@ -166,6 +173,7 @@ def main():
         settings['iso'] = args.iso
     if args.resolution:
         settings['resolution'] = args.resolution
+    settings['resolution'] = normalize_resolution(settings['resolution'])
     if args.vulkan_device is not None:
         settings['gpu'] = str(args.vulkan_device)
     if args.dry_run:
@@ -190,7 +198,7 @@ def main():
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
     window = tk.Tk()
-    window.title('Table Tennis for Linux, 1.0')
+    window.title('Table Tennis for Linux, 1.1')
     window.resizable(False, False)
     window.configure(background='#080d15')
     icon = tk.PhotoImage(file=str(Path(__file__).resolve().parent / 'assets/tux-icon.png'))

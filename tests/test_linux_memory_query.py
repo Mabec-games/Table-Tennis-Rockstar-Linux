@@ -14,7 +14,7 @@ SDK = Path(os.environ.get('TABLETENNIS_TEST_SDK', ROOT / '.tools/sdk-linux/linux
 @unittest.skipUnless(sys.platform == 'linux' and shutil.which('clang++') and
                      (SDK / 'lib/librexruntime.so').is_file(), 'requires Clang and Linux ReXGlue SDK')
 class MemoryQueryTests(unittest.TestCase):
-    def test_kernel_query_and_legacy_fallback(self):
+    def test_kernel_query_steamos_fallback_and_legacy_fallback(self):
         with tempfile.TemporaryDirectory() as directory:
             binary = Path(directory) / 'memory-query-test'
             subprocess.run([
@@ -23,19 +23,29 @@ class MemoryQueryTests(unittest.TestCase):
                 str(ROOT / 'project/src/linux_memory_query.cpp'),
                 '-L' + str(SDK / 'lib'), '-Wl,-rpath,' + str(SDK / 'lib'),
                 '-Wl,--export-dynamic-symbol=_ZN3rex6memory12QueryProtectEPvRmRNS0_10PageAccessE',
+                '-Wl,--export-dynamic-symbol=_ZN3rex6memory7ProtectEPvmNS0_10PageAccessEPS2_',
+                '-Wl,--export-dynamic-symbol=_ZN3rex6memory10AllocFixedEPvmNS0_14AllocationTypeENS0_10PageAccessE',
+                '-Wl,--export-dynamic-symbol=_ZN3rex6memory12DeallocFixedEPvmNS0_16DeallocationTypeE',
+                '-Wl,--export-dynamic-symbol=_ZN3rex6memory11MapFileViewElPvmNS0_10PageAccessEm',
+                '-Wl,--export-dynamic-symbol=_ZN3rex6memory13UnmapFileViewElPvm',
                 '-lrexruntime', '-ldl', '-o', str(binary),
             ], check=True, timeout=60)
-            for legacy in (False, True):
-                with self.subTest(legacy=legacy):
+            modes = (
+                ('Default (Radix + PROCMAP_QUERY)', {}),
+                ('Pre-6.11 SteamOS mode (Radix + fast maps)', {'TABLETENNIS_DISABLE_PROCMAP_QUERY': '1'}),
+                ('Legacy fallback', {'TABLETENNIS_LEGACY_MEMORY_QUERY': '1'}),
+            )
+            for label, extra_env in modes:
+                with self.subTest(mode=label):
                     env = os.environ.copy()
                     env.pop('TABLETENNIS_LEGACY_MEMORY_QUERY', None)
-                    if legacy:
-                        env['TABLETENNIS_LEGACY_MEMORY_QUERY'] = '1'
+                    env.pop('TABLETENNIS_DISABLE_PROCMAP_QUERY', None)
+                    env.update(extra_env)
                     result = subprocess.run([str(binary)], env=env, text=True,
                                             capture_output=True, timeout=30)
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                     self.assertIn('PASS: permissions', result.stdout)
-                    print(('Legacy fallback: ' if legacy else 'Kernel path: ') + result.stdout, end='')
+                    print(f'{label}: {result.stdout}', end='')
 
 
 if __name__ == '__main__':

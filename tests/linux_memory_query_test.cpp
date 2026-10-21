@@ -13,11 +13,15 @@
 #include <thread>
 #include <unistd.h>
 
+using rex::memory::AllocationType;
+using rex::memory::DeallocationType;
+using rex::memory::FileMappingHandle;
 using rex::memory::PageAccess;
 using Query = bool (*)(void*, size_t&, PageAccess&);
 static Query original;
 static size_t page;
 static volatile sig_atomic_t faults = 0;
+static volatile bool fault_use_rex_protect = false;
 
 static void Check(bool okay) {
   if (!okay) {
@@ -40,7 +44,13 @@ static void WriteFault(int, siginfo_t* info, void*) {
   if (!rex::memory::QueryProtect(info->si_addr, length, access) ||
       access != PageAccess::kReadOnly) _exit(91);
   auto* base = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(info->si_addr) & ~(page - 1));
-  if (mprotect(base, page, PROT_READ | PROT_WRITE)) _exit(92);
+  if (fault_use_rex_protect) {
+    PageAccess old_access = PageAccess::kNoAccess;
+    if (!rex::memory::Protect(base, page, PageAccess::kReadWrite, &old_access) ||
+        old_access != PageAccess::kReadOnly) _exit(93);
+  } else {
+    if (mprotect(base, page, PROT_READ | PROT_WRITE)) _exit(92);
+  }
   faults = faults + 1;
 }
 
@@ -84,7 +94,84 @@ int main() {
   Check(faults == 1000);
   Check(sigaction(SIGSEGV, &previous, nullptr) == 0);
 
-  // An inherited descriptor must not query the parent's mappings after fork.
+  // Exercise tracked rex::memory mappings (MapFileView, AllocFixed, Protect,
+  // DeallocFixed, UnmapFileView) so kernels without PROCMAP_QUERY (e.g.
+  // SteamOS 3.5/3.6 on Linux 6.1/6.5) resolve guest memory in user space.
+  std::string shm_name = "tt_mem_query_test_" + std::to_string(getpid());
+  FileMappingHandle mapping = rex::memory::CreateFileMappingHandle(
+      shm_name, page * 16, PageAccess::kReadWrite, false);
+  Check(mapping != rex::memory::kFileMappingHandleInvalid);
+
+  auto* arena_hole = static_cast<char*>(mmap(nullptr, page * 12, PROT_NONE,
+                                             MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
+  Check(arena_hole != MAP_FAILED);
+  Check(munmap(arena_hole, page * 12) == 0);
+  char* arena = arena_hole + page; // Leave unmapped guard holes on both sides.
+
+  // Contiguous file views (view0 at offset 0, view1 at offset 4*page) merge in
+  // the kernel; view2 at non-contiguous offset 8*page stays a separate VMA.
+  Check(rex::memory::MapFileView(mapping, arena, page * 4, PageAccess::kReadWrite, 0) == arena);
+  Check(rex::memory::MapFileView(mapping, arena + page * 4, page * 4, PageAccess::kReadWrite,
+                                 page * 4) == arena + page * 4);
+  Check(rex::memory::MapFileView(mapping, arena + page * 8, page * 2, PageAccess::kReadWrite,
+                                 page * 2) == arena + page * 8);
+  for (size_t idx = 0; idx < 10; ++idx) {
+    Compare(arena + idx * page);
+    Compare(arena + idx * page + 31);
+  }
+
+  // Commit and protect sub-ranges through rex::memory APIs.
+  Check(rex::memory::AllocFixed(arena + page * 2, page * 2, AllocationType::kCommit,
+                                PageAccess::kReadOnly) == arena + page * 2);
+  for (size_t idx = 0; idx < 10; ++idx) Compare(arena + idx * page);
+
+  PageAccess old_access = PageAccess::kNoAccess;
+  Check(rex::memory::Protect(arena + page * 2, page, PageAccess::kExecuteReadOnly, &old_access));
+  Check(old_access == PageAccess::kReadOnly);
+  for (size_t idx = 0; idx < 10; ++idx) Compare(arena + idx * page);
+
+  Check(rex::memory::DeallocFixed(arena + page * 3, page, DeallocationType::kDecommit));
+  for (size_t idx = 0; idx < 10; ++idx) Compare(arena + idx * page);
+
+  // Restore uniform kReadWrite across view0+view1 and verify VMA re-merge.
+  Check(rex::memory::Protect(arena + page * 2, page * 2, PageAccess::kReadWrite, &old_access));
+  Check(old_access == PageAccess::kExecuteReadOnly);
+  for (size_t idx = 0; idx < 10; ++idx) Compare(arena + idx * page);
+
+  // Exercise 1000 SIGSEGV write-watch faults on tracked guest memory.
+  faults = 0;
+  fault_use_rex_protect = true;
+  Check(sigaction(SIGSEGV, &action, &previous) == 0);
+  for (int i = 0; i < 1000; ++i) {
+    Check(rex::memory::Protect(arena + page * 5, page, PageAccess::kReadOnly, nullptr));
+    *reinterpret_cast<volatile char*>(arena + page * 5) = static_cast<char>(i);
+  }
+  Check(faults == 1000);
+  Check(sigaction(SIGSEGV, &previous, nullptr) == 0);
+  fault_use_rex_protect = false;
+  Compare(arena + page * 5);
+
+  // Benchmark tracked guest memory lookup with fragmented write-watch pages.
+  for (size_t idx = 0; idx < 8; idx += 2) {
+    Check(rex::memory::Protect(arena + idx * page, page, PageAccess::kReadOnly, nullptr));
+  }
+  constexpr int tracked_iters = 10000;
+  auto tracked_start = std::chrono::steady_clock::now();
+  for (int i = 0; i < tracked_iters; ++i) {
+    size_t len = 0;
+    PageAccess acc;
+    Check(rex::memory::QueryProtect(arena + page * 6, len, acc));
+    Check(len == page && acc == PageAccess::kReadOnly);
+  }
+  double tracked_us = std::chrono::duration<double, std::micro>(
+      std::chrono::steady_clock::now() - tracked_start).count() / tracked_iters;
+
+  Check(rex::memory::UnmapFileView(mapping, arena, page * 10));
+  Compare(arena);
+  rex::memory::CloseFileMappingHandle(mapping, shm_name);
+
+  // An inherited descriptor or radix table must not report stale parent
+  // permissions after fork.
   pid_t child = fork();
   Check(child >= 0);
   if (child == 0) {
@@ -134,7 +221,8 @@ int main() {
     return std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - start).count() / iterations;
   };
   double old_us = bench(original), new_us = bench(&rex::memory::QueryProtect);
-  std::printf("PASS: permissions, boundaries, remap, 1000 fault retries, fork, concurrent queries\n"
-              "Lookup benchmark: SDK %.3f us; override %.3f us (%.1fx)\n", old_us, new_us, old_us / new_us);
+  std::printf("PASS: permissions, boundaries, remap, 1000 fault retries, tracked arena, fork, concurrent queries\n"
+              "Lookup benchmark: SDK %.3f us; untracked override %.3f us (%.1fx); tracked guest %.3f us (%.1fx)\n",
+              old_us, new_us, old_us / new_us, tracked_us, old_us / tracked_us);
   Check(munmap(fragmented, page * pages) == 0);
 }

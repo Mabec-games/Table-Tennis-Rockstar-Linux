@@ -51,9 +51,14 @@ endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_sources(tabletennis PRIVATE src/linux_memory_query.cpp)
-    # Interpose the SDK's call too, not just calls originating in the executable.
+    # Interpose the SDK's memory management and query calls across shared libraries.
     target_link_options(tabletennis PRIVATE
-        "-Wl,--export-dynamic-symbol=_ZN3rex6memory12QueryProtectEPvRmRNS0_10PageAccessE")
+        "-Wl,--export-dynamic-symbol=_ZN3rex6memory12QueryProtectEPvRmRNS0_10PageAccessE"
+        "-Wl,--export-dynamic-symbol=_ZN3rex6memory7ProtectEPvmNS0_10PageAccessEPS2_"
+        "-Wl,--export-dynamic-symbol=_ZN3rex6memory10AllocFixedEPvmNS0_14AllocationTypeENS0_10PageAccessE"
+        "-Wl,--export-dynamic-symbol=_ZN3rex6memory12DeallocFixedEPvmNS0_16DeallocationTypeE"
+        "-Wl,--export-dynamic-symbol=_ZN3rex6memory11MapFileViewElPvmNS0_10PageAccessEm"
+        "-Wl,--export-dynamic-symbol=_ZN3rex6memory13UnmapFileViewElPvm")
     target_link_libraries(tabletennis PRIVATE ${CMAKE_DL_LIBS})
 endif()
 

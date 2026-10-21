@@ -28,6 +28,16 @@ class LinuxLauncherTests(unittest.TestCase):
         self.assertIn('--draw_resolution_scale_y=3', args)
         self.assertIn('--window_width=3840', args)
 
+    def test_steam_deck_800p_preset_and_alias(self):
+        for res in ('800p (Steam Deck)', '800p'):
+            args = launcher.arguments(dict(self.settings, resolution=res))
+            self.assertIn('--window_width=1280', args)
+            self.assertIn('--window_height=800', args)
+            self.assertIn('--resolution_scale=1', args)
+            self.assertIn('--draw_resolution_scale_x=1', args)
+            self.assertIn('--draw_resolution_scale_y=1', args)
+        self.assertEqual(launcher.normalize_resolution('800p'), '800p (Steam Deck)')
+
     def test_unsupported_filters_are_rejected(self):
         with self.assertRaises(ValueError):
             launcher.arguments(dict(self.settings, aa='invalid'))
