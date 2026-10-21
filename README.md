@@ -1,6 +1,6 @@
 ![Mabec Games — Table Tennis for Linux](docs/images/mabec.png)
 
-# Rockstar Games presents Table Tennis — Linux v1.1
+# Rockstar Games presents Table Tennis - Linux v1.1
 
 **Native Linux port by Mabec Games, forked from
 [davidptrssvea's Windows PC recompilation](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC).**
