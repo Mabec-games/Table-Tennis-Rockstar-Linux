@@ -1,4 +1,13 @@
-# Table Tennis for Linux v1.1
+# Table Tennis for Linux v1.1 (Superseded by v1.2)
+
+> **Superseded by [Linux v1.2](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.2):**
+> Community testing of v1.1 on a Steam Deck reported that while Training Mode
+> ran smoothly, 2-character matches against an opponent still experienced
+> slowdowns. The v1.1 AppImage has been removed and replaced by **Linux v1.2**,
+> which fixes the 2-character match command-buffer stall, shared-memory
+> invalidation widening, and guest fence spin bottlenecks. Please download
+> **[`Table-Tennis-Linux-v1.2-x86_64.AppImage`](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.2/Table-Tennis-Linux-v1.2-x86_64.AppImage)**
+> from the [Linux v1.2 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.2).
 
 Linux v1.1 of Mabec Games' fork of
 [davidptrssvea's Windows recompilation](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC),

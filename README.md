@@ -1,6 +1,6 @@
 ![Mabec Games — Table Tennis for Linux](docs/images/mabec.png)
 
-# Rockstar Games presents Table Tennis — Linux v1.1
+# Rockstar Games presents Table Tennis — Linux v1.2
 
 **Native Linux port by Mabec Games, forked from
 [davidptrssvea's Windows PC recompilation](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC).**
@@ -16,8 +16,22 @@ started correctly with no issues reported.**
 
 > **Pressing Escape immediately quits the game, without a confirmation dialog.**
 
-## What's in Linux v1.1
+## What's in Linux v1.2
 
+> **Note for v1.1 users:** The v1.1 AppImage released earlier today has been
+> removed and superseded by **v1.2**. Community testing on Steam Deck reported
+> that while Training Mode ran smoothly in v1.1, full 2-character matches still
+> slowed down. **v1.2** fixes the 2-character match bottlenecks (mid-frame
+> `WAIT_REG_MEM` sleep stalls, 256 KB shared-memory invalidation over-widening,
+> redundant `mprotect` syscalls, and guest D3D9 ring-buffer spin contention)
+> while keeping all v1.1 memory-tracking and `800p (Steam Deck)` features.
+
+- **2-character match slowdown fixes for Steam Deck / constrained RDNA 2 APUs:**
+  replaces 1–2+ ms mid-frame `WAIT_REG_MEM` sleeps in the Xenos GPU worker with
+  a low-latency spin/yield, disables 256 KB shared-memory invalidation
+  over-widening (nearly halving per-frame `memcpy` upload overhead on RADV),
+  skips redundant `mprotect` syscalls via the user-space page table, and yields
+  cleanly in the guest D3D9 ring-buffer wait (`sub_82359DC0`).
 - **Kernel-independent O(1) guest memory tracking** across `QueryProtect`,
   `Protect`, `AllocFixed`, `DeallocFixed`, `MapFileView`, and `UnmapFileView`,
   eliminating `/proc/self/maps` slowdowns on Linux 6.1–6.10 kernels (including
@@ -38,8 +52,8 @@ started correctly with no issues reported.**
 
 ## Getting started
 
-**[Download the Linux v1.1 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.1/Table-Tennis-Linux-v1.1-x86_64.AppImage)**
-from the [Linux v1.1 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.1).
+**[Download the Linux v1.2 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.2/Table-Tennis-Linux-v1.2-x86_64.AppImage)**
+from the [Linux v1.2 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.2).
 The release also includes a SHA-256 checksum and source ZIP.
 
 **Players do not need to install the SDK, Python, Tk or a compiler.**
@@ -53,8 +67,8 @@ the ISO available: the game reads it during play.
 Make the downloaded AppImage executable and start it:
 
 ```bash
-chmod +x Table-Tennis-Linux-v1.1-x86_64.AppImage
-./Table-Tennis-Linux-v1.1-x86_64.AppImage
+chmod +x Table-Tennis-Linux-v1.2-x86_64.AppImage
+./Table-Tennis-Linux-v1.2-x86_64.AppImage
 ```
 
 Choose the ISO, set **800p (Steam Deck)** on Steam Deck or **1080p** on desktop
@@ -64,14 +78,14 @@ launcher settings are reused.
 If FUSE mounting is unavailable:
 
 ```bash
-./Table-Tennis-Linux-v1.1-x86_64.AppImage --appimage-extract-and-run
+./Table-Tennis-Linux-v1.2-x86_64.AppImage --appimage-extract-and-run
 ```
 
 On the tested hybrid laptop, the Radeon 680M worked through native Wayland but
 showed a black window through X11/XWayland. For that configuration:
 
 ```bash
-SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.1-x86_64.AppImage
+SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.2-x86_64.AppImage
 ```
 
 This is a result from one laptop, not a requirement for all AMD systems.
@@ -80,10 +94,10 @@ This is a result from one laptop, not a requirement for all AMD systems.
 
 | Platform or configuration | Status |
 | --- | --- |
-| CachyOS, an Arch-based distribution | AppImage v1.1 launcher and game confirmed working |
-| NVIDIA RTX 3080 Laptop GPU, Ryzen 9 6900HS | Recorded 1080p gameplay at approximately 60 guest frames/s |
-| AMD Radeon 680M, Ryzen 9 6900HS, native Wayland | Recorded 1080p gameplay near 60 guest frames/s, with a short dip in the sample |
-| SteamOS / Steam Deck (Linux 6.1/6.5) | User-space page table (`TABLETENNIS_DISABLE_PROCMAP_QUERY=1`) and `800p (Steam Deck)` preset verified in tests/launcher; physical Steam Deck gameplay testing pending |
+| CachyOS, an Arch-based distribution | AppImage v1.2 launcher and game confirmed working |
+| NVIDIA RTX 3080 Laptop GPU, Ryzen 9 6900HS | Recorded 800p and 1080p gameplay at 60.0 guest frames/s |
+| AMD Radeon 680M (RADV, RDNA 2), Ryzen 9 6900HS, native Wayland | Recorded 1080p gameplay near 60 guest frames/s; core-constrained (`taskset -c 0-3`, 2 cores / 4 threads) 800p match rally improved to ~50–56 guest frames/s |
+| SteamOS / Steam Deck (Linux 6.1/6.5) | User-space page table, `800p (Steam Deck)` preset, and v1.2 2-character match fixes verified on RDNA 2 / RADV; follow-up physical Steam Deck retest pending |
 | Other current Arch installations | Compatibility target; broader testing needed |
 | Debian 13+ and Ubuntu 24.04+ | AppImage compatibility targets; desktop gameplay testing pending |
 

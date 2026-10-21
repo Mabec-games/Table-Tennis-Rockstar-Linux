@@ -138,6 +138,16 @@ int main() {
   Check(old_access == PageAccess::kExecuteReadOnly);
   for (size_t idx = 0; idx < 10; ++idx) Compare(arena + idx * page);
 
+  // Verify no-op Protect and interior-diff Protect on tracked ranges.
+  old_access = PageAccess::kNoAccess;
+  Check(rex::memory::Protect(arena + page * 2, page * 2, PageAccess::kReadWrite, &old_access));
+  Check(old_access == PageAccess::kReadWrite);
+  Check(rex::memory::Protect(arena + page * 3, page, PageAccess::kReadOnly, nullptr));
+  Compare(arena + page * 3);
+  Check(rex::memory::Protect(arena + page * 1, page * 5, PageAccess::kReadWrite, &old_access));
+  Check(old_access == PageAccess::kReadWrite);
+  for (size_t idx = 0; idx < 10; ++idx) Compare(arena + idx * page);
+
   // Exercise 1000 SIGSEGV write-watch faults on tracked guest memory.
   faults = 0;
   fault_use_rex_protect = true;

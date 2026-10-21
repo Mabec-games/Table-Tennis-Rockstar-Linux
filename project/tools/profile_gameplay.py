@@ -161,6 +161,7 @@ def main():
                         help='Override resolution for this run only')
     parser.add_argument('--aa', choices=('none', 'fxaa', 'fxaa_extreme'),
                         help='Override anti-aliasing for this run only')
+    parser.add_argument('--gpu', help='Override GPU device (e.g. "device:AMD Radeon 680M (RADV REMBRANDT)" or index) for this run only')
     args = parser.parse_args()
     if args.analyse:
         analyse(args.analyse)
@@ -176,6 +177,8 @@ def main():
     settings['resolution'] = launcher.normalize_resolution(settings['resolution'])
     if args.aa:
         settings['aa'] = args.aa
+    if args.gpu:
+        settings['gpu'] = args.gpu
     os.environ['TT_CPU_PROFILE'] = '1'
     # The system RenderDoc Vulkan layer is opt-in. A shell started from a
     # capture session may export this and distort the very timings we measure.

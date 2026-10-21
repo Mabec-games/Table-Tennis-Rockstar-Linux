@@ -1,4 +1,4 @@
-# Table Tennis for Linux v1.1 — build and runtime guide
+# Table Tennis for Linux v1.2 — build and runtime guide
 
 Building the Linux game from source uses Python 3.10+ and the native ReXGlue
 0.10.0 SDK. The launcher does not build the game and should not need an SDK
@@ -13,17 +13,19 @@ page-query optimization, a recorded rally averaged 59.96 guest frames/s at the
 cap using RADV and native Wayland. Check guest timings when diagnosing speed:
 the UI FPS counter alone can show 60 even when guest frames run slower.
 
-## Linux v1.1 AppImage
+## Linux v1.2 AppImage
 
-`dist/Table-Tennis-Linux-v1.1-x86_64.AppImage` packages the native game, corrected
+`dist/Table-Tennis-Linux-v1.2-x86_64.AppImage` packages the native game, corrected
 Xenos graphics plugin, ReXGlue runtime, launcher artwork, Python, Tcl/Tk, Vulkan
 loader and GPU enumeration utility. Players do not install the SDK or Python/Tk.
 Select your own supported retail ISO in the launcher; the ISO is not bundled.
 **Pressing Escape immediately quits the game, without a confirmation dialog.**
 
-On 2026-10-20, the user confirmed that the AppImage launched both the launcher
-and game correctly, with no issues, on the CachyOS (Arch-based) test laptop.
-Clean-machine and Debian/Ubuntu desktop testing remain pending.
+On 2026-10-20 and 2026-10-21, the user confirmed that the AppImage launched both
+the launcher and game correctly, with no issues, on the CachyOS (Arch-based)
+test laptop. `v1.2` supersedes the `v1.1` AppImage with 2-character match
+performance fixes for Steam Deck / constrained RDNA 2 hardware. Clean-machine
+and Debian/Ubuntu desktop testing remain pending.
 
 This build targets SteamOS 3.5+ (Steam Deck), current Arch, Debian 13+, and
 Ubuntu 24.04+ with an x86-64-v3 CPU, Linux 6.1+, and a working Vulkan driver.
@@ -37,11 +39,11 @@ gameplay validation on either distribution. Debian 12 and Ubuntu 22.04 are
 outside this build's compatibility target.
 
 ```bash
-./dist/Table-Tennis-Linux-v1.1-x86_64.AppImage
+./dist/Table-Tennis-Linux-v1.2-x86_64.AppImage
 # Headless runtime/import check:
-./dist/Table-Tennis-Linux-v1.1-x86_64.AppImage --self-test
+./dist/Table-Tennis-Linux-v1.2-x86_64.AppImage --self-test
 # If FUSE mounting is unavailable:
-./dist/Table-Tennis-Linux-v1.1-x86_64.AppImage --appimage-extract-and-run
+./dist/Table-Tennis-Linux-v1.2-x86_64.AppImage --appimage-extract-and-run
 ```
 
 The launcher shares existing settings and saves with normal source launches.
@@ -61,7 +63,7 @@ Checksums and the ELF compatibility audit are saved in `build/appimage/`.
 The packaging script currently consumes the local Arch/CachyOS Python/Tk
 installation; this is a maintainer build prerequisite, not a player dependency.
 
-The v1.1 AppImage is distributed as a separate GitHub release asset, alongside
+The v1.2 AppImage is distributed as a separate GitHub release asset, alongside
 checksums and a source archive. It contains the native executable and patched
 menu override; it does not contain the ISO or XEX. Keep compiled binaries out
 of Git history, and never include the ISO, captures, dumps or local saves.

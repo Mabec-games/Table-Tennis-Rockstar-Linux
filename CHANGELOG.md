@@ -1,6 +1,44 @@
 # Changelog
 
-## Linux v1.1 — 2026-10-21
+## Linux v1.2 — 2026-10-21
+
+Steam Deck / constrained RDNA 2 match-performance fix for the Mabec Games Linux
+fork (`linux-v1.2`), superseding the `v1.1` AppImage released earlier on the
+same day.
+
+- **Superseded `v1.1` AppImage:**
+  Community testing of `v1.1` on a Steam Deck reported that while Training Mode
+  ran smoothly, 2-character matches against an opponent still slowed down. The
+  `v1.1` AppImage has been removed and replaced by `v1.2`.
+- **Eliminated `WAIT_REG_MEM` mid-frame sleep stalls (`build_gpu_diagnostics.py`):**
+  Replaced the unconditional `Sleep(wait / 0x100 ms)` (1–2+ ms plus Linux timer
+  slack) in `CommandProcessor::ExecutePacketType3_WAIT_REG_MEM` when `vsync` is
+  enabled and `wait >= 0x100` with a tiered spin/yield (`pause` -> `MaybeYield`
+  up to ~1.5 ms -> `50 µs` sleep fallback), reducing GPU worker command-ring
+  stall time by ~100x during 2-character matches.
+- **Replaced guest D3D9 ring-buffer spin (`main.cpp`):**
+  Overrode `sub_82359DC0` so the main guest thread yields via `_mm_pause()` and
+  `std::this_thread::yield()` instead of executing 100-iteration dummy stack
+  load/store loops (`db16cyc` emulation) while waiting for GPU command-buffer
+  segment retirement.
+- **Disabled 256 KB shared-memory invalidation over-widening (`build_gpu_diagnostics.py`):**
+  Disabled the 64-page (256 KB) invalidation widening in
+  `SharedMemory::MemoryInvalidationCallback` that caused dynamic skinning writes
+  during 2-character matches to invalidate adjacent static geometry/texture
+  pages, cutting GPU worker `VulkanSharedMemory::UploadRanges` (`memcpy`) CPU
+  samples nearly in half (from 17.85% down to 9.63%) on RADV.
+- **Eliminated redundant `mprotect` syscalls (`linux_memory_query.cpp`):**
+  Added `FindTrackedAccessDiffRange` to `Protect` and `AllocFixed` using the
+  user-space radix page table to skip no-op `mprotect` syscalls and trim
+  unchanged prefix/suffix pages on multi-page calls.
+- **Validation status:**
+  Validated on CachyOS across NVIDIA RTX 3080 (60.0 FPS at 800p/1080p) and AMD
+  Radeon 680M (RADV, RDNA 2) under a 2-core / 4-thread constraint
+  (`taskset -c 0-3` at 800p, improving match framerate to ~50–56 swaps/s and
+  reducing guest CPU time to ~11.9–15.2 ms/frame). Follow-up physical Steam Deck
+  retest remains open.
+
+## Linux v1.1 — 2026-10-21 (AppImage superseded by v1.2)
 
 SteamOS / Steam Deck performance and resolution update for the Mabec Games
 Linux fork (`linux-v1.1`).

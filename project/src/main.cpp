@@ -178,6 +178,80 @@ extern "C" void __imp__Tabletennis_XamShowSigninUI_Hook(PPCContext& ctx, uint8_t
   Tabletennis_XamShowSigninUI_Hook(ctx, base);
 }
 
+// Overrides the weak guest D3D9 ring-buffer wait loop (sub_82359DC0).
+// On Xbox 360 hardware, loc_82359E30 executes 100 iterations of `db16cyc`
+// (hardware thread pause) while waiting for the GPU command processor to
+// advance the ring-buffer read fence at [[r31+10384]+4]. In static C++
+// recompilation `db16cyc` compiles to a comment, turning the wait into a
+// tight guest-stack load/store spin that starves the GPU worker thread on
+// 4-core APUs like the Steam Deck.
+extern "C" REX_FUNC(sub_82359DC0) {
+  REX_FUNC_PROLOGUE();
+  uint32_t ea{};
+  ctx.r12.u64 = ctx.lr;
+  ctx.lr = 0x82359DC8;
+  __savegprlr_29(ctx, base);
+  ea = -144 + ctx.r1.u32;
+  REX_STORE_U32(ea, ctx.r1.u32);
+  ctx.r1.u32 = ea;
+  ctx.r31.u64 = ctx.r3.u64;
+  ctx.r30.u64 = ctx.r5.u64;
+  ctx.r29.u64 = ctx.r4.u64;
+  ctx.r9.u64 = REX_LOAD_U32(ctx.r31.u32 + 10384);
+  ctx.r11.u64 = REX_LOAD_U32(ctx.r9.u32 + 4);
+  ctx.r10.u64 = ctx.r30.u64 - ctx.r11.u64;
+  ctx.r10.u64 = ctx.r10.u32 & 0x3;
+  ctx.cr0.compare<int32_t>(ctx.r10.s32, 0, ctx.xer);
+  if (ctx.cr0.eq) goto loc_82359E74;
+  ctx.cr6.compare<uint32_t>(ctx.r10.u32, 1, ctx.xer);
+  if (!ctx.cr6.eq) goto loc_82359E00;
+  ctx.r11.u64 = __builtin_rotateleft64(ctx.r11.u32 | (ctx.r11.u64 << 32), 0) & 0xFFFFFFFC;
+  ctx.cr6.compare<uint32_t>(ctx.r29.u32, ctx.r11.u32, ctx.xer);
+  if (!ctx.cr6.gt) goto loc_82359E74;
+loc_82359E00:
+  ctx.r11.u64 = REX_LOAD_U32(ctx.r9.u32 + 0);
+  REX_STORE_U32(ctx.r1.u32 + 88, ctx.r31.u32);
+  REX_STORE_U32(ctx.r1.u32 + 96, ctx.r11.u32);
+  ctx.r11.u64 = REX_LOAD_U32(ctx.r13.u32 + 256);
+  ctx.r11.u64 = REX_LOAD_U32(ctx.r11.u32 + 88);
+  REX_STORE_U32(ctx.r1.u32 + 92, ctx.r11.u32);
+  {
+    uint32_t spin_iters = 0;
+  loc_82359E18:
+    ctx.r3.s64 = ctx.r1.s64 + 88;
+    ctx.lr = 0x82359E20;
+    sub_823643E0(ctx, base);
+    ctx.cr0.compare<int32_t>(ctx.r3.s32, 0, ctx.xer);
+    if (ctx.cr0.eq) goto loc_82359E74;
+    REX_STORE_U32(ctx.r1.u32 + 80, 0);
+    ctx.r11.u64 = 0;
+    ctx.cr6.compare<uint32_t>(0, 0, ctx.xer);
+#if defined(_M_X64) || defined(__x86_64__)
+    for (int i = 0; i < 16; ++i) {
+      _mm_pause();
+    }
+#endif
+    if (++spin_iters >= 8) {
+      std::this_thread::yield();
+    }
+    ctx.r11.u64 = REX_LOAD_U32(ctx.r31.u32 + 10384);
+    ctx.r11.u64 = REX_LOAD_U32(ctx.r11.u32 + 4);
+    ctx.r10.u64 = ctx.r30.u64 - ctx.r11.u64;
+    ctx.r10.u64 = ctx.r10.u32 & 0x3;
+    ctx.cr0.compare<int32_t>(ctx.r10.s32, 0, ctx.xer);
+    if (ctx.cr0.eq) goto loc_82359E74;
+    ctx.cr6.compare<uint32_t>(ctx.r10.u32, 1, ctx.xer);
+    if (!ctx.cr6.eq) goto loc_82359E18;
+    ctx.r11.u64 = __builtin_rotateleft64(ctx.r11.u32 | (ctx.r11.u64 << 32), 0) & 0xFFFFFFFC;
+    ctx.cr6.compare<uint32_t>(ctx.r29.u32, ctx.r11.u32, ctx.xer);
+    if (ctx.cr6.gt) goto loc_82359E18;
+  }
+loc_82359E74:
+  ctx.r1.s64 = ctx.r1.s64 + 144;
+  __restgprlr_29(ctx, base);
+  return;
+}
+
 namespace {
 struct EarlyInit {
   EarlyInit() {

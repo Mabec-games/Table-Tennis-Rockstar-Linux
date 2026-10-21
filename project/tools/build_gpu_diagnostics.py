@@ -46,6 +46,59 @@ def main():
     assert text.count(needle) == 1
     text = text.replace(needle, needle.replace('\n\n  // wait',
         '\n  TabletennisGpuProfileScope profile_wait_reg(1);\n\n  // wait'), 1)
+    old_wait_loop = '''  bool matched = false;
+  do {'''
+    new_wait_loop = '''  bool matched = false;
+  uint32_t loop_count = 0;
+  do {'''
+    assert text.count(old_wait_loop) == 1, 'Pinned WAIT_REG_MEM loop header changed'
+    text = text.replace(old_wait_loop, new_wait_loop, 1)
+    old_wait_body = '''      // Wait.
+      if (wait >= 0x100) {
+        PrepareForWait();
+        if (!REXCVAR_GET(vsync)) {
+          // User wants it fast and dangerous.
+          rex::thread::MaybeYield();
+        } else {
+          rex::thread::Sleep(std::chrono::milliseconds(wait / 0x100));
+        }
+        rex::thread::SyncMemory();
+        ReturnFromWait();
+
+        if (!worker_running_) {
+          // Short-circuited exit.
+          return false;
+        }
+      } else {
+        rex::thread::MaybeYield();
+      }'''
+    new_wait_body = '''      // Wait.
+      if (wait >= 0x100) {
+        PrepareForWait();
+        if (!REXCVAR_GET(vsync) || loop_count < 8192) {
+          // Avoid 1ms+ mid-frame sleeps while the guest CPU is actively building
+          // the next D3D9 command buffer segment.
+          if (loop_count < 256) {
+            __builtin_ia32_pause();
+          } else {
+            rex::thread::MaybeYield();
+          }
+        } else {
+          rex::thread::Sleep(std::chrono::microseconds(50));
+        }
+        rex::thread::SyncMemory();
+        ReturnFromWait();
+        ++loop_count;
+
+        if (!worker_running_) {
+          // Short-circuited exit.
+          return false;
+        }
+      } else {
+        rex::thread::MaybeYield();
+      }'''
+    assert text.count(old_wait_body) == 1, 'Pinned WAIT_REG_MEM sleep block changed'
+    text = text.replace(old_wait_body, new_wait_body, 1)
     path.write_text(text)
     path = graphics / 'vulkan/command_processor.cpp'
     text = path.read_text()
@@ -53,6 +106,17 @@ def main():
     needle = '    VkResult wait_result =\n        dfn.vkWaitForFences(device, uint32_t(await_submission - submission_completed_),\n                            submissions_in_flight_fences_.data(), VK_TRUE, UINT64_MAX);'
     assert text.count(needle) == 1
     text = text.replace(needle, '    TabletennisGpuProfileScope profile_fence_wait(3);\n' + needle, 1)
+    path.write_text(text)
+    # Do not widen 4 KB CPU write-watch faults to 64 pages (256 KB) in SharedMemory.
+    # Widening invalidates untouched static vertex/index/texture pages in the same
+    # 256 KB block, forcing VulkanSharedMemory::UploadRanges to repeatedly memcpy
+    # and mprotect up to 256 KB per segment during a match.
+    path = graphics / 'shared_memory.cpp'
+    text = path.read_text()
+    old_inval = '  if (!exact_range) {\n    // Check if a somewhat wider range (up to 256 KB with 4 KB pages) can be'
+    new_inval = '  if (false && !exact_range) {\n    // Check if a somewhat wider range (up to 256 KB with 4 KB pages) can be'
+    assert text.count(old_inval) == 1, 'Pinned SharedMemory invalidation block changed'
+    text = text.replace(old_inval, new_inval, 1)
     path.write_text(text)
     if not args.production:
         shutil.copy2(ROOT / 'project/tools/renderdoc_guest_capture.h',

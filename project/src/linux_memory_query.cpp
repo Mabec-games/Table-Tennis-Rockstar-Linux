@@ -282,15 +282,20 @@ void UntrackRange(uintptr_t base, size_t length) noexcept {
   }
 }
 
-bool IsRangeTracked(uintptr_t base, size_t length) noexcept {
+bool FindTrackedAccessDiffRange(uintptr_t base, size_t length, PageAccess access,
+                                uintptr_t& diff_base_out, size_t& diff_length_out) noexcept {
   if (!radix_enabled || in_fork_child || length == 0 || (base & (kPageSize - 1)) != 0) {
     return false;
   }
   const uintptr_t end = base + ((length + kPageSize - 1) & ~(kPageSize - 1));
   if (end <= base || end > kMaxUserAddress) return false;
 
+  const uint16_t target_access = static_cast<uint16_t>(access) & kAccessMask;
   size_t vpn = base >> kPageShift;
   const size_t end_vpn = end >> kPageShift;
+  size_t first_diff_vpn = end_vpn;
+  size_t last_diff_vpn = 0;
+
   while (vpn < end_vpn) {
     L3Node* l3 = GetL3(vpn);
     if (!l3) return false;
@@ -299,11 +304,27 @@ bool IsRangeTracked(uintptr_t base, size_t length) noexcept {
                              ? (end_vpn - vpn)
                              : (kL3Entries - l3_start);
     for (size_t i = 0; i < count; ++i) {
-      if ((l3->entries[l3_start + i].load(std::memory_order_acquire) & kTrackedBit) == 0) {
+      const uint16_t entry = l3->entries[l3_start + i].load(std::memory_order_acquire);
+      if ((entry & kTrackedBit) == 0) {
         return false;
+      }
+      if ((entry & kAccessMask) != target_access) {
+        const size_t cur_vpn = vpn + i;
+        if (first_diff_vpn == end_vpn) {
+          first_diff_vpn = cur_vpn;
+        }
+        last_diff_vpn = cur_vpn;
       }
     }
     vpn += count;
+  }
+
+  if (first_diff_vpn == end_vpn) {
+    diff_base_out = base;
+    diff_length_out = 0;
+  } else {
+    diff_base_out = first_diff_vpn << kPageShift;
+    diff_length_out = (last_diff_vpn - first_diff_vpn + 1) << kPageShift;
   }
   return true;
 }
@@ -645,12 +666,18 @@ void* AllocFixed(void* base_address, size_t length, AllocationType allocation_ty
   // Fast path for committing pages inside an already-reserved guest arena
   // (e.g. MapFileView or prior AllocFixed(kReserve)): skip the failing
   // mmap(MAP_FIXED_NOREPLACE) syscall and the /proc/self/maps scan.
+  uintptr_t diff_base = 0;
+  size_t diff_length = 0;
   if (base_address != nullptr &&
       (allocation_type == AllocationType::kCommit ||
        allocation_type == AllocationType::kReserveCommit) &&
-      IsRangeTracked(base, length)) {
-    if (mprotect(base_address, length, static_cast<int>(prot_requested)) == 0) {
-      UpdateTrackedRangeAccess(base, length, access);
+      FindTrackedAccessDiffRange(base, length, access, diff_base, diff_length)) {
+    if (diff_length == 0) {
+      return base_address;
+    }
+    if (mprotect(reinterpret_cast<void*>(diff_base), diff_length,
+                 static_cast<int>(prot_requested)) == 0) {
+      UpdateTrackedRangeAccess(diff_base, diff_length, access);
       return base_address;
     }
     return nullptr;
@@ -729,6 +756,19 @@ bool Protect(void* base_address, size_t length, PageAccess access, PageAccess* o
   }
 
   const uint32_t prot = ToPosixProtectFlagsLocal(access);
+  uintptr_t diff_base = 0;
+  size_t diff_length = 0;
+  if (FindTrackedAccessDiffRange(base, length, access, diff_base, diff_length)) {
+    if (diff_length == 0) {
+      return true;
+    }
+    if (mprotect(reinterpret_cast<void*>(diff_base), diff_length, static_cast<int>(prot)) != 0) {
+      return false;
+    }
+    UpdateTrackedRangeAccess(diff_base, diff_length, access);
+    return true;
+  }
+
   if (mprotect(base_address, length, static_cast<int>(prot)) != 0) {
     return false;
   }
