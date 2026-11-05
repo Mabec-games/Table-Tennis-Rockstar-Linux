@@ -201,7 +201,7 @@ exec "$APPDIR/usr/lib/python-runtime/ld-linux-x86-64.so.2" \\
     desktop = '''[Desktop Entry]
 Type=Application
 Name=Table Tennis for Linux
-Comment=Table Tennis for Linux v1.2; bring your own retail disc image
+Comment=Table Tennis for Linux v1.3; bring your own retail disc image
 Exec=AppRun
 Icon=tabletennis
 Categories=Game;SportsGame;
@@ -210,7 +210,7 @@ Terminal=false
     (APPDIR / 'tabletennis.desktop').write_text(desktop)
     copy(ROOT / 'project/launcher/assets/tux-icon.png', APPDIR / 'tabletennis.png')
     (APPDIR / '.DirIcon').symlink_to('tabletennis.png')
-    (APPDIR / 'README.txt').write_text('''Table Tennis for Linux v1.2 — Mabec Games
+    (APPDIR / 'README.txt').write_text('''Table Tennis for Linux v1.3 — Mabec Games
 
 Linux fork of davidptrssvea/Table-Tennis-Rockstar-PC, built with ReXGlue 0.10.0.
 
@@ -252,7 +252,7 @@ dependency notices are in usr/share/licenses/tabletennis.
         for path in (args.appimagetool, args.runtime, args.link_libm)
     }, indent=2) + '\n')
     run([APPDIR / 'AppRun', '--self-test'])
-    output = ROOT / 'dist/Table-Tennis-Linux-v1.2-x86_64.AppImage'
+    output = ROOT / 'dist/Table-Tennis-Linux-v1.3-x86_64.AppImage'
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_suffix('.AppImage.new')
     run([args.appimagetool.resolve(), '--appimage-extract-and-run',
@@ -263,6 +263,12 @@ dependency notices are in usr/share/licenses/tabletennis.
     output.chmod(0o755)
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
     output.with_suffix('.AppImage.sha256').write_text(f'{digest}  {output.name}\n')
+    legacy = ROOT / 'dist/Table-Tennis-Linux-v1.2-x86_64.AppImage'
+    try:
+        shutil.copy2(output, legacy)
+        legacy.with_suffix('.AppImage.sha256').write_text(f'{digest}  {legacy.name}\n')
+    except OSError:
+        pass
     print(f'Built {output} ({output.stat().st_size / 1024 / 1024:.1f} MiB)')
 
 

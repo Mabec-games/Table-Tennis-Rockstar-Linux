@@ -11,7 +11,7 @@ import urllib.request
 import urllib.error
 
 DEFAULT_REPO = "Mabec-games/Table-Tennis-Rockstar-Linux"
-DEFAULT_INSTALLED = "1.2"
+DEFAULT_INSTALLED = "1.3"
 
 
 def parse_version(text):

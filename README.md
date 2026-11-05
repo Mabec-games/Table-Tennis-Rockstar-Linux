@@ -1,6 +1,6 @@
 ![Mabec Games — Table Tennis for Linux](docs/images/mabec.png)
 
-# Rockstar Games presents Table Tennis — Linux v1.2
+# Rockstar Games presents Table Tennis — Linux v1.3
 
 **Native Linux port by Mabec Games, forked from
 [davidptrssvea's Windows PC recompilation](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC).**
@@ -16,15 +16,45 @@ started correctly with no issues reported.**
 
 > **Pressing Escape immediately quits the game, without a confirmation dialog.**
 
-## What's in Linux v1.2
+## What's new in Linux v1.3
 
-> **Note for v1.1 users:** The v1.1 AppImage released earlier today has been
-> removed and superseded by **v1.2**. Community testing on Steam Deck reported
-> that while Training Mode ran smoothly in v1.1, full 2-character matches still
-> slowed down. **v1.2** fixes the 2-character match bottlenecks (mid-frame
-> `WAIT_REG_MEM` sleep stalls, 256 KB shared-memory invalidation over-widening,
-> redundant `mprotect` syscalls, and guest D3D9 ring-buffer spin contention)
-> while keeping all v1.1 memory-tracking and `800p (Steam Deck)` features.
+Linux v1.3 brings a major feature synchronization with the upstream PC recompilation (Windows v1.5.3), completely native Linux adaptations, in-game PC settings, and custom achievements:
+
+- **Rockstar-Themed Achievements Panel & Sound Effects:**
+  - Full in-game Table Tennis achievements UI accessible directly from **EXTRAS > ACHIEVEMENTS** on the main menu, by holding the controller **View** button, or pressing **F7**.
+  - Fully navigable with gamepad (**D-Pad / Left Stick** to scroll, **LB / RB** to page up/down, **B button** to exit) and keyboard, with full background input swallowing.
+  - In-game notification toasts on achievement unlock and synthesized achievement unlock audio chime.
+  - Automatically loads and tracks all 29 achievements (1000 G).
+
+![Achievements list in Table Tennis for Linux v1.3](docs/images/achievements.jpg)
+
+- **In-Game PC Settings Menu:**
+  - Accessible via **OPTIONS > PC SETTINGS** with full Xbox / PlayStation gamepad and mouse support.
+  - Change display resolution on the fly, toggle fullscreen, switch anti-aliasing (FXAA / FXAA Extreme), configure post-processing scaling (FSR / CAS / Bilinear), and customize button prompts.
+  - Settings are saved directly to `settings.ini` without modifying your saves or ISO.
+- **Dynamic Controller Button Prompts (Xbox & PlayStation):**
+  - Dynamically detects connected SDL3 controllers and updates in-memory DXT5 UI textures in real time to present native PlayStation (Cross, Circle, Square, Triangle) or Xbox (A, B, X, Y) button icons across all menus and tutorials.
+- **Ultrawide & Custom Aspect Ratio Support (21:9 & 32:9):**
+  - Native support for ultrawide displays with automatic horizontal FOV scaling.
+  - Scissor-clipped 16:9 safe-area locks ensure legacy UI, menus, scoreboards, and character viewer preserve original proportions without stretching or letterboxing bugs.
+- **Photo Mode with 0.5x–5x Optical Zoom:**
+  - Enter Photo Mode by pressing **F9** or clicking both thumbsticks simultaneously in offline matches.
+  - Free 3D camera controls with camera roll, variable speed, and **0.5x to 5.0x optical zoom** using Page Up / Page Down, mouse wheel, or D-Pad.
+  - High-resolution screenshots saved automatically to the `photos/` folder as clean PNGs.
+- **Microsecond POSIX Frame Pacer:**
+  - Linux POSIX `nanosleep` frame pacing at a steady 60 FPS with microsecond spin recovery to eliminate stutter and presentation hitching.
+- **In-Game GitHub Release Updates:**
+  - Background update checker querying [Mabec-games/Table-Tennis-Rockstar-Linux](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux) directly.
+  - Check status in **OPTIONS > PC SETTINGS > UPDATES** and open releases with one click via `xdg-open`.
+- **Quit to Desktop & Cursor Auto-Hide:**
+  - Added clean **QUIT TO DESKTOP** option on the main menu.
+  - Mouse cursor automatically hides after 2 seconds of inactivity during gameplay and menus.
+- **System Link Networking:**
+  - Direct IP-based system link play supported across local networks and virtual LANs.
+
+---
+
+## What's in Linux v1.2 & v1.1
 
 - **2-character match slowdown fixes for Steam Deck / constrained RDNA 2 APUs:**
   replaces 1–2+ ms mid-frame `WAIT_REG_MEM` sleeps in the Xenos GPU worker with
@@ -52,8 +82,8 @@ started correctly with no issues reported.**
 
 ## Getting started
 
-**[Download the Linux v1.2 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.2/Table-Tennis-Linux-v1.2-x86_64.AppImage)**
-from the [Linux v1.2 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.2).
+**[Download the Linux v1.3 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.3/Table-Tennis-Linux-v1.3-x86_64.AppImage)**
+from the [Linux v1.3 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.3).
 The release also includes a SHA-256 checksum and source ZIP.
 
 **Players do not need to install the SDK, Python, Tk or a compiler.**
@@ -67,8 +97,8 @@ the ISO available: the game reads it during play.
 Make the downloaded AppImage executable and start it:
 
 ```bash
-chmod +x Table-Tennis-Linux-v1.2-x86_64.AppImage
-./Table-Tennis-Linux-v1.2-x86_64.AppImage
+chmod +x Table-Tennis-Linux-v1.3-x86_64.AppImage
+./Table-Tennis-Linux-v1.3-x86_64.AppImage
 ```
 
 Choose the ISO, set **800p (Steam Deck)** on Steam Deck or **1080p** on desktop
@@ -78,14 +108,14 @@ launcher settings are reused.
 If FUSE mounting is unavailable:
 
 ```bash
-./Table-Tennis-Linux-v1.2-x86_64.AppImage --appimage-extract-and-run
+./Table-Tennis-Linux-v1.3-x86_64.AppImage --appimage-extract-and-run
 ```
 
 On the tested hybrid laptop, the Radeon 680M worked through native Wayland but
 showed a black window through X11/XWayland. For that configuration:
 
 ```bash
-SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.2-x86_64.AppImage
+SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.3-x86_64.AppImage
 ```
 
 This is a result from one laptop, not a requirement for all AMD systems.
@@ -94,7 +124,7 @@ This is a result from one laptop, not a requirement for all AMD systems.
 
 | Platform or configuration | Status |
 | --- | --- |
-| CachyOS, an Arch-based distribution | AppImage v1.2 launcher and game confirmed working |
+| CachyOS, an Arch-based distribution | AppImage launcher and game confirmed working |
 | NVIDIA RTX 3080 Laptop GPU, Ryzen 9 6900HS | Recorded 800p and 1080p gameplay at 60.0 guest frames/s |
 | AMD Radeon 680M (RADV, RDNA 2), Ryzen 9 6900HS, native Wayland | Recorded 1080p gameplay near 60 guest frames/s; core-constrained (`taskset -c 0-3`, 2 cores / 4 threads) 800p match rally improved to ~50–56 guest frames/s |
 | SteamOS / Steam Deck (Linux 6.1/6.5) | User-space page table, `800p (Steam Deck)` preset, and v1.2 2-character match fixes verified on RDNA 2 / RADV; follow-up physical Steam Deck retest pending |
@@ -114,13 +144,16 @@ See [hardware validation](docs/linux-hardware-validation.md) for the evidence
 and limitations. The repository includes Debian/Arch launcher smoke tests;
 these do not replace desktop graphics testing.
 
-## Controls and local files
+## Controls and shortcuts
 
 | Control | Action |
 | --- | --- |
-| **Escape** | **Immediately quits the game — no confirmation dialog** |
+| **Escape** | **Immediately quits the game — no confirmation dialog** (or closes Achievements / PC Settings overlay) |
+| **F7** / **Hold View** | Open the in-game Achievements panel (navigable with D-pad / sticks, LB/RB page jump, B to close) |
+| **F9** / **Click Both Sticks** | Toggle Photo Mode camera in offline matches |
+| **Page Up / Down / Mouse Wheel / D-Pad** | Optical zoom in Photo Mode (0.5x–5x) |
 | **F10** | Toggle the FPS/frame-time overlay |
-| Gamepad | Gameplay controls, intro skipping and supported controller rumble |
+| **Gamepad** | Full gameplay controls, in-game menu navigation, and supported controller rumble |
 
 If a first-run **Saved Game** prompt appears, answer it with the gamepad.
 
