@@ -12,8 +12,9 @@ LINUX_FILES = {
     'profile-amd.sh', 'profile-gameplay.sh', 'analyse-renderdoc.sh',
     '.github/workflows/linux-launcher.yml',
     'docs/linux-hardware-validation.md', 'docs/RELEASE-LINUX-v1.0.md',
-    'docs/RELEASE-LINUX-v1.1.md', 'docs/RELEASE-LINUX-v1.2.md',
+    'docs/RELEASE-LINUX-v1.1.md', 'docs/RELEASE-LINUX-v1.2.md', 'docs/RELEASE-LINUX-v1.3.md',
     'docs/images/mabec.png', 'docs/images/SCREEN1.png', 'docs/images/TT_launcher.png',
+    'docs/images/achievements.jpg',
     'licenses/LinuxArtwork/CREDITS.md',
     'project/launcher/launcher_linux.py', 'project/launcher/appimage_entry.py',
     'project/launcher/assets/launcher-panel.png',
@@ -25,20 +26,37 @@ LINUX_FILES = {
     'project/tools/build_gpu_diagnostics.py', 'project/tools/debug_skin_capture.py',
     'project/tools/profile_gameplay.py', 'project/tools/renderdoc_guest_capture.h',
     'project/tools/setup_linux.py', 'project/tools/spirv_debug_compat.py',
+    'project/tools/check_update.py',
     'tests/linux_memory_query_test.cpp', 'tests/test_linux_memory_query.py',
     'tests/test_linux_launcher.py', 'tests/test_appimage.py',
+    'tests/test_check_update.py',
 }
 FIXED_FILES = {
     'project/assets/tabletennis.ico', 'licenses/Icon/CREDITS.txt',
     'project/CMakeLists.txt', 'project/tabletennis_manifest.toml', 'project/overrides.toml',
     'project/cmake/rexglue.cmake', 'project/launcher/Launcher.cs',
+    'project/release.json',
     'project/src/main.cpp', 'project/src/tabletennis_app.h', 'project/src/offline_menu_device.h',
     'project/src/intro_skip.cpp', 'project/src/intro_skip.h',
+    'project/src/achievement_ui.cpp', 'project/src/achievement_ui.h',
+    'project/src/button_prompt_art.inc', 'project/src/button_prompts.cpp', 'project/src/button_prompts.h',
+    'project/src/button_texture_layout.h',
+    'project/src/frame_pacer.cpp', 'project/src/frame_pacer.h', 'project/src/frame_schedule.h',
+    'project/src/pc_features.cpp', 'project/src/pc_features.h',
+    'project/src/pc_settings.cpp', 'project/src/pc_settings.h',
+    'project/src/photo_camera.h', 'project/src/photo_image.h', 'project/src/photo_mode.cpp', 'project/src/photo_mode.h',
+    'project/src/screen_layout.h', 'project/src/settings_store.h',
+    'project/src/stats_window.cpp', 'project/src/stats_window.h',
+    'project/src/system_link.cpp', 'project/src/system_link.h',
+    'project/src/update_ui.cpp', 'project/src/update_ui.h',
     'project/sdk-overrides/rex/platform/fpscr.h', 'project/sdk-overrides/rex/ppc/context.h',
     'project/sdk-overrides/rex_app.cpp',
     'project/tools/disc_image.py', 'project/tools/patch_menu.py', 'project/tools/patch_native.py',
     'project/tools/native_edits.json', 'project/tools/setup_build.py', 'project/tools/package_source.py',
+    'project/tools/make_extra_button_art.py', 'project/tools/menu_online.py', 'project/tools/menu_settings.py',
+    'server/README.md', 'server/ttlink_server.py',
     'tests/test_local_build.py', 'licenses/ReXGlue/LICENSE.txt', 'licenses/SDL3/LICENSE.txt',
+    'tests/frame_pacing_test.cpp', 'tests/pc_features_test.cpp', 'tests/photo_image_probe.cpp', 'tests/test_photo_image.py',
     'reports/LOCAL_BUILD.md',
     'project/installer/Installer.cs', 'project/tools/bootstrap.ps1', 'project/tools/build_installer.ps1',
 }
@@ -66,7 +84,7 @@ def package(output):
     files = audit()
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    path = output / 'Table-Tennis-Linux-Source-v1.2.zip'
+    path = output / 'Table-Tennis-Linux-Source-v1.3.zip'
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name in files:
             archive.write(ROOT / name, name)
