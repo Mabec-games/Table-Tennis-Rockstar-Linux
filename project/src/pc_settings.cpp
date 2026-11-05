@@ -142,7 +142,7 @@ struct SettingsPage::State {
     {"button_prompts","BUTTON ICONS","AUTO follows the controller in use. Changes apply immediately.",{"auto","xbox","playstation"},{"AUTO","XBOX","PLAYSTATION"}},
     {"achievement_sound","ACHIEVEMENT SOUND","Play a sound when an achievement unlocks.",{"false","true"},{"OFF","ON"},1},
     {"display_aspect","PICTURE ASPECT","AUTO follows the display. Locks preserve proportions with black bars. Applies after restart.",{ "auto","16:9","21:9","32:9" },{ "AUTO / DISPLAY","16:9","21:9","32:9" },0,true},
-    {"updates","UPDATES","Check signed releases. Installation only starts after you approve it in the updater.",{""},{"CHECK NOW"}}
+    {"updates","UPDATES","Check GitHub (Mabec-games/Table-Tennis-Rockstar-Linux) for updates. Press A to check now.",{""},{"CHECK NOW"}}
   };
   int row=0,repeat_direction=0;
   double repeat_at=0;
@@ -235,7 +235,14 @@ void SettingsPage::OnDraw(ImGuiIO& io) {
     const auto color=selected?IM_COL32(255,209,0,255):IM_COL32(205,207,211,255);
     text(23*s,x+28*s,yy,color,row.label);
     auto label=std::string(row.labels[row.selected])+(row.restart?" *":"");
-    if(std::string(row.key)=="updates") {auto update=updates::GetStatus();if(update.state=="available") label="UPDATE "+update.version;}
+    if(std::string(row.key)=="updates") {
+      auto update=updates::GetStatus();
+      if(update.state=="checking") label="CHECKING...";
+      else if(update.state=="available") label="UPDATE "+update.version;
+      else if(update.state=="up_to_date") label="UP TO DATE ("+(update.version.empty()?"1.2":update.version)+")";
+      else if(update.state=="failed") label="CHECK FAILED";
+      else label="CHECK NOW";
+    }
     auto* font=achievement_ui::HeadlineFont(23*s);
     auto size=font->CalcTextSizeA(23*s,FLT_MAX,0,label.c_str());
     text(23*s,r-28*s-size.x,yy,color,label.c_str());
@@ -244,7 +251,18 @@ void SettingsPage::OnDraw(ImGuiIO& io) {
     }
   }
   dl->PushClipRect({x+20*s,y+454*s},{r-20*s,y+524*s},true);
-  text(19*s,x+28*s,y+456*s,IM_COL32(220,220,220,255),state_->rows[state_->row].help,false);
+  const char* help_str=state_->rows[state_->row].help;
+  std::string dynamic_help;
+  if(std::string(state_->rows[state_->row].key)=="updates") {
+    auto update=updates::GetStatus();
+    if(update.state=="checking") dynamic_help="Checking GitHub (Mabec-games/Table-Tennis-Rockstar-Linux)...";
+    else if(update.state=="available") dynamic_help="Version "+update.version+" is available on GitHub! Press A to open releases.";
+    else if(update.state=="up_to_date") dynamic_help="Table Tennis is up to date ("+(update.version.empty()?"1.2":update.version)+"). Press A to check or visit GitHub.";
+    else if(update.state=="failed") dynamic_help="Update check failed: "+(update.message.empty()?"Network error":update.message)+". Press A to retry.";
+    else dynamic_help="Check GitHub (Mabec-games/Table-Tennis-Rockstar-Linux) for updates.";
+    help_str=dynamic_help.c_str();
+  }
+  text(19*s,x+28*s,y+456*s,IM_COL32(220,220,220,255),help_str,false);
   text(18*s,x+28*s,y+489*s,IM_COL32(190,190,190,255),"* AFTER RESTART     |     FRAME PACING: 60 FPS",false);
   dl->PopClipRect();
   dl->AddRectFilled({x,y+535*s},{r,y+583*s},IM_COL32(205,208,210,255));
@@ -258,7 +276,14 @@ void SettingsPage::OnDraw(ImGuiIO& io) {
     prompts::DrawButtonLabel(dl,{xx+21*s,center.y},21*s,ink,label,
                              achievement_ui::HeadlineFont(21*s));
   };
-  action(x+415*s,"A","CHANGE",IM_COL32(90,186,40,255));
+  const char* a_btn_label = "CHANGE";
+  if(std::string(state_->rows[state_->row].key)=="updates") {
+    auto update=updates::GetStatus();
+    if(update.state=="available") a_btn_label="OPEN RELEASES";
+    else if(update.state=="up_to_date") a_btn_label="CHECK / VISIT";
+    else a_btn_label="CHECK NOW";
+  }
+  action(x+415*s,"A",a_btn_label,IM_COL32(90,186,40,255));
   action(x+640*s,"B","SAVE & BACK",IM_COL32(210,44,44,255));
   if(!state_->error.empty()) text(16*s,x+12*s,y+592*s,IM_COL32(255,130,110,255),state_->error.c_str(),false);
 }
