@@ -89,6 +89,39 @@ class StartupDialog : public rex::ui::ImGuiDialog {
   bool attached_ = true;
 };
 
+class OnDemandToastDialog : public tabletennis::achievement_ui::AchievementToast {
+ public:
+  OnDemandToastDialog(rex::ui::WindowedAppContext& context, rex::ui::ImGuiDrawer* drawer,
+      rex::ui::ImmediateDrawer* immediate, rex::Runtime* runtime,
+      rex::system::AchievementManager* manager, rex::ui::Window* window)
+      : AchievementToast(drawer, immediate, runtime, manager, window), context_(context) {
+    if (HasPendingWork()) { attached_ = true; tabletennis::pacing::SetUiActive(true); }
+    else imgui_drawer()->RemoveDialog(this);
+  }
+  void Push(const rex::system::AchievementEvent& event) override {
+    AchievementToast::Push(event);
+    context_.CallInUIThreadDeferred([this] {
+      if (!attached_) {
+        imgui_drawer()->AddDialog(this);
+        attached_ = true;
+        tabletennis::pacing::SetUiActive(true);
+      }
+    });
+  }
+ protected:
+  void OnDraw(ImGuiIO& io) override {
+    AchievementToast::OnDraw(io);
+    if (attached_ && !HasPendingWork()) {
+      imgui_drawer()->RemoveDialog(this);
+      attached_ = false;
+      tabletennis::pacing::SetUiActive(false);
+    }
+  }
+ private:
+  rex::ui::WindowedAppContext& context_;
+  bool attached_ = false;
+};
+
 class TabletennisApp : public rex::ReXApp {
  public:
   TabletennisApp(rex::ui::WindowedAppContext& ctx, const std::string_view name,
@@ -96,6 +129,18 @@ class TabletennisApp : public rex::ReXApp {
       : rex::ReXApp(ctx, name, ppc_info) {
     rex::cvar::SetFlagByName("protect_zero", "false");
     rex::cvar::SetFlagByName("gpu_allow_invalid_fetch_constants", "true");
+  }
+
+  void OnKeyDown(rex::ui::KeyEvent& event) override {
+    if (!tabletennis::photo::HandleKey(event, true) &&
+        !tabletennis::pc_settings::HandleKey(event) &&
+        !tabletennis::achievement_ui::HandleKey(event)) {
+      rex::ui::ProcessKeyEvent(event);
+    }
+  }
+
+  void OnKeyUp(rex::ui::KeyEvent& event) override {
+    tabletennis::photo::HandleKey(event, false);
   }
 
   ~TabletennisApp() override {
@@ -249,6 +294,21 @@ class TabletennisApp : public rex::ReXApp {
                     entry->device()->mount_path(), entry->size());
       }
     }
+  }
+
+  std::unique_ptr<rex::ui::AchievementNotificationDialog> CreateAchievementNotificationDialog()
+      override {
+    if (!imgui_drawer() || !immediate_drawer() || !runtime()) {
+      return nullptr;
+    }
+    return std::make_unique<OnDemandToastDialog>(app_context(), imgui_drawer(), immediate_drawer(),
+                                                 runtime(), &achievements(), window());
+  }
+
+  std::unique_ptr<rex::ui::ImGuiDialog> CreateAchievementsOverlay() override {
+    if (!imgui_drawer() || !runtime()) return nullptr;
+    return std::make_unique<tabletennis::achievement_ui::AchievementsPanel>(
+        imgui_drawer(), immediate_drawer(), runtime(), &achievements());
   }
 
   void OnConfigureFonts(ImFontAtlas* atlas) override {
