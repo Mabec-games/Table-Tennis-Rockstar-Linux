@@ -14,6 +14,14 @@ include(cmake/rexglue.cmake)
 set(TABLETENNIS_SOURCES
     src/main.cpp
     src/intro_skip.cpp
+    src/frame_pacer.cpp
+    src/stats_window.cpp
+    src/pc_features.cpp
+    src/pc_settings.cpp
+    src/photo_mode.cpp
+    src/update_ui.cpp
+    src/achievement_ui.cpp
+    src/button_prompts.cpp
 )
 
 if(WIN32)

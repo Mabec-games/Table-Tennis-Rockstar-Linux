@@ -6,6 +6,15 @@
 #include <rex/filesystem.h>
 #include "offline_menu_device.h"
 #include "intro_skip.h"
+#include "pc_features.h"
+#include "pc_settings.h"
+#include "update_ui.h"
+#include "achievement_ui.h"
+#include "button_prompts.h"
+#include "system_link.h"
+#include "frame_pacer.h"
+#include "stats_window.h"
+#include "photo_mode.h"
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -18,9 +27,15 @@
 #include <rex/ui/imgui_dialog.h>
 #include <rex/ui/imgui_drawer.h>
 #include <rex/ui/keybinds.h>
+#include <rex/ui/overlay/achievement_toast.h>
+#include <rex/ui/windowed_app_context.h>
 #include <rex/ui/window.h>
 #include <imgui.h>
 
+#include <cctype>
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -29,19 +44,22 @@
 
 REXCVAR_DECLARE(bool, show_fps);
 REXCVAR_DECLARE(int32_t, framerate);
+REXCVAR_DECLARE(bool, allow_tearing);
+REXCVAR_DECLARE(bool, frame_log);
 
-class FpsOverlayDialog : public rex::ui::ImGuiDialog {
+class StartupDialog : public rex::ui::ImGuiDialog {
  public:
-  explicit FpsOverlayDialog(rex::ui::ImGuiDrawer* drawer, ImFont* loading_font)
-      : rex::ui::ImGuiDialog(drawer), loading_font_(loading_font) {}
+  explicit StartupDialog(rex::ui::ImGuiDrawer* drawer, ImFont* loading_font)
+      : rex::ui::ImGuiDialog(drawer), loading_font_(loading_font) {
+    tabletennis::pacing::SetUiActive(true);
+  }
 
-  void SetVisible(bool visible) { visible_ = visible; }
-  bool IsVisible() const { return visible_; }
-  void Toggle() { visible_ = !visible_; }
+  bool attached() const { return attached_; }
 
  protected:
   void OnDraw(ImGuiIO& io) override {
     tabletennis::intro::PollGamepads();
+    tabletennis::prompts::Update();
     if (tabletennis::intro::ShowTransition()) {
       const auto* viewport = ImGui::GetMainViewport();
       auto* draw = ImGui::GetForegroundDrawList();
@@ -50,7 +68,6 @@ class FpsOverlayDialog : public rex::ui::ImGuiDialog {
           IM_COL32(0, 0, 0, 255));
       const char* message = "LOADING MAIN MENU...";
       auto* font = loading_font_ ? loading_font_ : ImGui::GetFont();
-      // Use the baked loading face size, independent of the smaller overlay font.
       const float font_size = loading_font_ ? loading_font_->LegacySize
                                             : ImGui::GetFontSize() * 3.0f;
       const auto size = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, message);
@@ -59,75 +76,17 @@ class FpsOverlayDialog : public rex::ui::ImGuiDialog {
                           viewport->Pos.y + (viewport->Size.y - size.y) * 0.5f),
                     IM_COL32(255, 255, 255, 255), message);
     }
-    // Pace presentation thread to target framerate limit
-    int32_t target_fps = REXCVAR_GET(framerate);
-    if (target_fps > 0) {
-      using clock = std::chrono::steady_clock;
-      static auto last_draw = clock::now();
-      const auto target_dur = std::chrono::nanoseconds(1'000'000'000LL / target_fps);
-      auto now = clock::now();
-      auto elapsed = now - last_draw;
-      if (elapsed < target_dur) {
-        auto sleep_dur = target_dur - elapsed;
-        if (sleep_dur > std::chrono::milliseconds(2)) {
-          std::this_thread::sleep_for(sleep_dur - std::chrono::milliseconds(1));
-        }
-        while (clock::now() - last_draw < target_dur) {
-#if defined(_M_X64) || defined(__x86_64__)
-          _mm_pause();
-#endif
-        }
-      }
-      last_draw = clock::now();
+    if (tabletennis::intro::UiWorkFinished()) {
+      imgui_drawer()->RemoveDialog(this);
+      attached_ = false;
+      tabletennis::pacing::SetUiActive(false);
+      REXLOG_INFO("TabletennisApp: startup dialog detached; presenting game frames only");
     }
-
-    static int perf_log_counter = 0;
-    if (++perf_log_counter % 120 == 0) {
-      REXLOG_INFO("PERF TICK: Current FPS: {:.1f} ({:.2f} ms)", io.Framerate, (io.Framerate > 0.0f ? 1000.0f / io.Framerate : 0.0f));
-    }
-
-    if (!visible_) {
-      return;
-    }
-
-    // Position overlay at top-left with slight offset
-    ImGui::SetNextWindowPos(ImVec2(16.0f, 16.0f), ImGuiCond_Always);
-    ImGui::SetNextWindowBgAlpha(0.65f);
-
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
-                             ImGuiWindowFlags_AlwaysAutoResize |
-                             ImGuiWindowFlags_NoSavedSettings |
-                             ImGuiWindowFlags_NoFocusOnAppearing |
-                             ImGuiWindowFlags_NoNav |
-                             ImGuiWindowFlags_NoInputs;
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 6.0f));
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.06f, 0.08f, 0.12f, 0.85f));
-    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.18f, 0.42f, 0.70f, 0.60f));
-
-    if (ImGui::Begin("##FpsOverlay", nullptr, flags)) {
-      float fps = io.Framerate;
-      float ms = (fps > 0.0f) ? (1000.0f / fps) : 0.0f;
-
-      ImVec4 color = (fps >= 115.0f) ? ImVec4(0.0f, 0.9f, 1.0f, 1.0f) :   // Cyan for 120Hz/144Hz/240Hz
-                     (fps >= 55.0f)  ? ImVec4(0.2f, 1.0f, 0.4f, 1.0f) :   // Green for 60Hz
-                     (fps >= 30.0f)  ? ImVec4(1.0f, 0.85f, 0.2f, 1.0f) :  // Yellow
-                                       ImVec4(1.0f, 0.3f, 0.3f, 1.0f);    // Red
-
-      ImGui::TextColored(color, "FPS: %.1f", fps);
-      ImGui::SameLine();
-      ImGui::TextDisabled("(%.2f ms)", ms);
-    }
-    ImGui::End();
-
-    ImGui::PopStyleColor(2);
-    ImGui::PopStyleVar(2);
   }
 
  private:
   ImFont* loading_font_ = nullptr;
-  bool visible_ = false;
+  bool attached_ = true;
 };
 
 class TabletennisApp : public rex::ReXApp {
@@ -140,13 +99,18 @@ class TabletennisApp : public rex::ReXApp {
   }
 
   ~TabletennisApp() override {
+    photo_ui_alive_->store(false);
+    tabletennis::photo::Shutdown();
+    rex::ui::UnregisterBind("bind_photo_mode");
+    tabletennis::updates::Stop();
+    tabletennis::pc_settings::SetOpenCallback({});
     tabletennis::intro::Uninstall();
     rex::ui::UnregisterBind("bind_toggle_fps");
     rex::ui::UnregisterBind("bind_quit_game");
-    if (imgui_drawer_ && fps_overlay_) {
-      imgui_drawer_->RemoveDialog(fps_overlay_.get());
+    if (imgui_drawer_ && startup_dialog_ && startup_dialog_->attached()) {
+      imgui_drawer_->RemoveDialog(startup_dialog_.get());
     }
-    fps_overlay_.reset();
+    startup_dialog_.reset();
   }
 
   static std::unique_ptr<rex::ui::WindowedApp> Create(
@@ -320,24 +284,30 @@ class TabletennisApp : public rex::ReXApp {
         break;
       }
     }
+    tabletennis::achievement_ui::ConfigureFonts(atlas, rex::filesystem::GetExecutableFolder() / "fonts");
   }
 
   void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {
     imgui_drawer_ = drawer;
     if (drawer) {
-      fps_overlay_ = std::make_unique<FpsOverlayDialog>(drawer, loading_font_);
-      bool initial_visible = REXCVAR_GET(show_fps);
-      fps_overlay_->SetVisible(initial_visible);
-      drawer->AddDialog(fps_overlay_.get());
-      REXLOG_INFO("TabletennisApp: FPS overlay created (initial state: {})", initial_visible ? "ON" : "OFF");
+      startup_dialog_ = std::make_unique<StartupDialog>(drawer, loading_font_);
     }
+    if (REXCVAR_GET(show_fps) && window()) {
+      tabletennis::stats_window::Show(window()->GetNativeWindowHandle());
+    }
+
+    // Hotkey F9 toggles photo mode
+    rex::ui::RegisterBind("bind_photo_mode", "F9", "Photo Mode", [] { tabletennis::photo::RequestToggle(); });
 
     // Hotkey F10 toggles FPS overlay during gameplay
     rex::ui::RegisterBind("bind_toggle_fps", "F10", "Toggle In-Game FPS Counter", [this] {
-      if (fps_overlay_) {
-        fps_overlay_->Toggle();
-        REXLOG_INFO("FPS counter toggled via F10: {}", fps_overlay_->IsVisible() ? "ON" : "OFF");
+      if (tabletennis::stats_window::IsVisible()) {
+        tabletennis::stats_window::Hide();
+      } else if (window()) {
+        tabletennis::stats_window::Show(window()->GetNativeWindowHandle());
       }
+      REXLOG_INFO("FPS overlay toggled via F10: {}",
+                  tabletennis::stats_window::IsVisible() ? "ON" : "OFF");
     });
 
     // Hotkey ESC quits the game cleanly.
@@ -350,10 +320,58 @@ class TabletennisApp : public rex::ReXApp {
       }
     });
 
-    REXLOG_INFO("TabletennisApp: Binds for ESC (Quit) and F10 (FPS Toggle) are active");
+    REXLOG_INFO("TabletennisApp: Binds for ESC (Quit), F9 (Photo Mode) and F10 (FPS Toggle) are active");
+  }
+
+  void OnWindowPixelSizeChanged(uint32_t width, uint32_t height) override {
+    tabletennis::pc::SetSurfaceSize(width, height);
   }
 
   void OnPostSetup() override {
+    tabletennis::photo::Init([this]() -> rex::ui::Presenter* {
+      auto* graphics = runtime() ? runtime()->graphics_system() : nullptr;
+      return graphics ? graphics->presenter() : nullptr;
+    }, [this, alive = photo_ui_alive_] {
+      app_context().CallInUIThreadDeferred([this, alive] {
+        if (alive->load() && imgui_drawer()) new tabletennis::photo::Overlay(imgui_drawer());
+      });
+    });
+#if defined(TT_COMMUNITY_NETWORK)
+    REXLOG_INFO("Tabletennis: Network setup: enabled={}, system_link={}, server={}, player={}",
+                tabletennis::lan::Enabled(), rex::cvar::GetFlagByName("system_link"),
+                rex::cvar::GetFlagByName("online_server"), rex::cvar::GetFlagByName("user_name"));
+#endif
+    tabletennis::pc::SetAchievementsToggle([this] {
+      app_context().CallInUIThreadDeferred([this] {
+        if (!window()) return;
+        rex::ui::KeyEvent event(window(), rex::ui::VirtualKey::kF7, 1, false, false, false, false, false);
+        rex::ui::ProcessKeyEvent(event);
+      });
+    });
+    tabletennis::pc_settings::SetOpenCallback([this] {
+      app_context().CallInUIThreadDeferred([this] {
+        if (window()) new tabletennis::pc_settings::SettingsPage(imgui_drawer(), window());
+      });
+    });
+    tabletennis::pc::SetQuitCallback([this] {
+      app_context().CallInUIThreadDeferred([this] {
+        if (window()) window()->RequestClose();
+        else std::_Exit(0);
+      });
+    });
+    tabletennis::updates::Start([this](std::string version) {
+      app_context().CallInUIThreadDeferred([this, version] { new tabletennis::updates::UpdateToast(imgui_drawer(), version); });
+    });
+    tabletennis::prompts::Init(runtime()->memory(), runtime()->graphics_system());
+    if (window()) {
+      window()->SetCursorAutoHideDelayMs(2000);
+      window()->SetCursorVisibility(rex::ui::Window::CursorVisibility::kAutoHidden);
+      tabletennis::pc::SetWindow(window()->GetNativeWindowHandle());
+      tabletennis::pc::SetSurfaceSize(window()->GetActualPhysicalWidth(), window()->GetActualPhysicalHeight());
+    }
+
+    tabletennis::pacing::Initialize(REXCVAR_GET(framerate), REXCVAR_GET(frame_log) ? "frametimes.csv" : "");
+    tabletennis::pacing::InstallPresentHook();
     tabletennis::intro::Install();
     REXLOG_INFO("TabletennisApp::OnPostSetup - Runtime and VFS fully initialized");
   }
@@ -377,7 +395,8 @@ class TabletennisApp : public rex::ReXApp {
     }
   }
 
+  std::shared_ptr<std::atomic<bool>> photo_ui_alive_ = std::make_shared<std::atomic<bool>>(true);
   ImFont* loading_font_ = nullptr;
-  std::unique_ptr<FpsOverlayDialog> fps_overlay_;
+  std::unique_ptr<StartupDialog> startup_dialog_;
   rex::ui::ImGuiDrawer* imgui_drawer_ = nullptr;
 };

@@ -100,8 +100,10 @@ def main():
     for name in ('launcher_linux.py', 'appimage_entry.py'):
         copy(ROOT / 'project/launcher' / name, PAYLOAD / 'project/launcher' / name)
     shutil.copytree(ROOT / 'project/launcher/assets', PAYLOAD / 'project/launcher/assets')
-    for name in ('disc_image.py', 'patch_menu.py'):
+    for name in ('disc_image.py', 'patch_menu.py', 'menu_settings.py'):
         copy(ROOT / 'project/tools' / name, PAYLOAD / 'project/tools' / name)
+    if (ROOT / 'dist/fonts').exists():
+        shutil.copytree(ROOT / 'dist/fonts', game_dir / 'fonts', dirs_exist_ok=True)
     manifest = {str(path.relative_to(game_dir)): hashlib.sha256(path.read_bytes()).hexdigest()
                 for path in sorted(game_dir.rglob('*')) if path.is_file()}
     (PAYLOAD / 'runtime-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')

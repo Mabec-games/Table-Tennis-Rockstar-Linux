@@ -18,6 +18,10 @@
 
 REXCVAR_DEFINE_BOOL(show_fps, false, "UI", "Show in-game FPS counter");
 REXCVAR_DEFINE_INT32(framerate, 60, "Video", "Target framerate limit (60, 120, 144, 240, 0=unlimited)");
+REXCVAR_DEFINE_STRING(display_aspect, "auto", "Video", "Picture aspect: auto follows the display, or lock 16:9, 21:9 or 32:9")
+    .allowed({"auto", "16:9", "21:9", "32:9"});
+REXCVAR_DEFINE_BOOL(frame_log, false, "Video", "Write every game frame and present time to frametimes.csv next to the executable");
+REXCVAR_DEFINE_BOOL(allow_tearing, true, "Video", "Present without waiting for display refresh. Off can drop the game below 60 FPS: a blocked present stalls GPU emulation");
 
 static double TabletennisCurrentThreadCpuSeconds() {
 #if defined(_WIN32)
@@ -262,3 +266,11 @@ struct EarlyInit {
 }  // namespace
 
 REX_DEFINE_APP(tabletennis, TabletennisApp::Create)
+
+#if !defined(TT_COMMUNITY_NETWORK)
+#undef __imp__XamUserGetXUID
+extern "C" REX_FUNC(__imp__XamUserGetXUID);
+extern "C" void Tabletennis_XamUserGetXUID_Hook(PPCContext& ctx, uint8_t* base) {
+  __imp__XamUserGetXUID(ctx, base);
+}
+#endif
