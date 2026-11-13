@@ -103,6 +103,7 @@ def main():
     for name in ('disc_image.py', 'patch_menu.py', 'menu_settings.py', 'check_update.py'):
         copy(ROOT / 'project/tools' / name, PAYLOAD / 'project/tools' / name)
     copy(ROOT / 'project/tools/check_update.py', game_dir / 'check_update.py')
+    copy(ROOT / 'project/launcher/assets/tux-icon.png', game_dir / 'tabletennis.png')
     if (ROOT / 'build/linux/install-version.txt').exists():
         copy(ROOT / 'build/linux/install-version.txt', game_dir / 'install-version.txt')
     if (ROOT / 'project/release.json').exists():

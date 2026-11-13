@@ -31,6 +31,9 @@
 #include <rex/ui/windowed_app_context.h>
 #include <rex/ui/window.h>
 #include <imgui.h>
+#if !defined(_WIN32)
+#include <SDL3/SDL.h>
+#endif
 
 #include <cctype>
 #include <algorithm>
@@ -427,6 +430,7 @@ class TabletennisApp : public rex::ReXApp {
       window()->SetCursorAutoHideDelayMs(2000);
       window()->SetCursorVisibility(rex::ui::Window::CursorVisibility::kAutoHidden);
       tabletennis::pc::SetWindow(window()->GetNativeWindowHandle());
+      ApplyWindowIcon();
       tabletennis::pc::SetSurfaceSize(window()->GetActualPhysicalWidth(), window()->GetActualPhysicalHeight());
     }
 
@@ -453,6 +457,34 @@ class TabletennisApp : public rex::ReXApp {
     } else {
       REXLOG_WARN("ISO validation WARNING: GDFX magic not found at 0xFDA0000. Image may be corrupt or non-standard.");
     }
+  }
+
+  // The SDK's SDL window has no icon of its own; without one X11 desktops
+  // show a generic placeholder in the title bar, taskbar and task switcher.
+  static void ApplyWindowIcon() {
+#if !defined(_WIN32)
+    const auto folder = rex::filesystem::GetExecutableFolder();
+    SDL_Surface* icon = nullptr;
+    for (const auto& path : {folder / "tabletennis.png",
+                             folder.parent_path().parent_path() / "project/launcher/assets/tux-icon.png"}) {
+      icon = SDL_LoadPNG(path.string().c_str());
+      if (icon) break;
+    }
+    if (!icon) {
+      REXLOG_WARN("TabletennisApp: window icon not found next to the executable");
+      return;
+    }
+    int count = 0;
+    SDL_Window** windows = SDL_GetWindows(&count);
+    for (int i = 0; windows && i < count; ++i) {
+      if (!SDL_SetWindowIcon(windows[i], icon)) {
+        REXLOG_WARN("TabletennisApp: could not set the window icon: {}", SDL_GetError());
+      }
+    }
+    SDL_free(windows);
+    SDL_DestroySurface(icon);
+    REXLOG_INFO("TabletennisApp: window icon applied to {} window(s)", count);
+#endif
   }
 
   std::shared_ptr<std::atomic<bool>> photo_ui_alive_ = std::make_shared<std::atomic<bool>>(true);
