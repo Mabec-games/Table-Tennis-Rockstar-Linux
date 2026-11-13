@@ -441,7 +441,10 @@ class TabletennisApp : public rex::ReXApp {
 
     for (const char* name : {"TT_LEGACY_PACING", "TT_NO_ASPECT", "TT_NO_ACHIEVEMENT_UI",
                              "TT_NO_UPDATE_CHECK", "TT_NO_PROMPTS"}) {
-      if (tabletennis::pc::Diagnostic(name)) REXLOG_WARN("TabletennisApp: troubleshooting switch {} is active", name);
+      if (tabletennis::pc::Diagnostic(name)) REXLOG_WARN("TabletennisApp: compatibility switch {} is active", name);
+    }
+    if (tabletennis::pc::IsSteamDeck()) {
+      REXLOG_INFO("TabletennisApp: Steam Deck detected; compatibility switches default to on");
     }
     tabletennis::pacing::Initialize(REXCVAR_GET(framerate), REXCVAR_GET(frame_log) ? "frametimes.csv" : "");
     tabletennis::pacing::InstallPresentHook();
