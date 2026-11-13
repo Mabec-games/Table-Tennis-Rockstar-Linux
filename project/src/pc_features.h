@@ -1,8 +1,19 @@
 #pragma once
 #include <functional>
 #include <cstdint>
+#include <cstdlib>
 struct PPCContext;
 namespace tabletennis::pc {
+// Troubleshooting switches, set as environment variables with the value 1:
+//   TT_LEGACY_PACING       pace on the presenting thread, as Linux v1.2 did
+//   TT_NO_ASPECT           keep the picture and letterboxing at the v1.2 16:9 behaviour
+//   TT_NO_ACHIEVEMENT_UI   no achievement popup, list or sound
+//   TT_NO_UPDATE_CHECK     do not start the background update check
+//   TT_NO_PROMPTS          do not follow the controller type for button icons
+inline bool Diagnostic(const char* name) {
+  const char* value = std::getenv(name);
+  return value && value[0] == '1';
+}
 double OverlayAspect();
 void ToggleAchievements();
 void SetAchievementsToggle(std::function<void()> callback);

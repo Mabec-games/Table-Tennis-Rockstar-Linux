@@ -79,6 +79,10 @@ class StartupDialog : public rex::ui::ImGuiDialog {
                           viewport->Pos.y + (viewport->Size.y - size.y) * 0.5f),
                     IM_COL32(255, 255, 255, 255), message);
     }
+    if (tabletennis::pacing::Legacy()) {
+      tabletennis::pacing::PaceLegacyPresent();
+      return;
+    }
     if (tabletennis::intro::UiWorkFinished()) {
       imgui_drawer()->RemoveDialog(this);
       attached_ = false;
@@ -301,7 +305,8 @@ class TabletennisApp : public rex::ReXApp {
 
   std::unique_ptr<rex::ui::AchievementNotificationDialog> CreateAchievementNotificationDialog()
       override {
-    if (!imgui_drawer() || !immediate_drawer() || !runtime()) {
+    if (!imgui_drawer() || !immediate_drawer() || !runtime() ||
+        tabletennis::pc::Diagnostic("TT_NO_ACHIEVEMENT_UI")) {
       return nullptr;
     }
     return std::make_unique<OnDemandToastDialog>(app_context(), imgui_drawer(), immediate_drawer(),
@@ -309,7 +314,7 @@ class TabletennisApp : public rex::ReXApp {
   }
 
   std::unique_ptr<rex::ui::ImGuiDialog> CreateAchievementsOverlay() override {
-    if (!imgui_drawer() || !runtime()) return nullptr;
+    if (!imgui_drawer() || !runtime() || tabletennis::pc::Diagnostic("TT_NO_ACHIEVEMENT_UI")) return nullptr;
     return std::make_unique<tabletennis::achievement_ui::AchievementsPanel>(
         imgui_drawer(), immediate_drawer(), runtime(), &achievements());
   }
@@ -434,6 +439,10 @@ class TabletennisApp : public rex::ReXApp {
       tabletennis::pc::SetSurfaceSize(window()->GetActualPhysicalWidth(), window()->GetActualPhysicalHeight());
     }
 
+    for (const char* name : {"TT_LEGACY_PACING", "TT_NO_ASPECT", "TT_NO_ACHIEVEMENT_UI",
+                             "TT_NO_UPDATE_CHECK", "TT_NO_PROMPTS"}) {
+      if (tabletennis::pc::Diagnostic(name)) REXLOG_WARN("TabletennisApp: troubleshooting switch {} is active", name);
+    }
     tabletennis::pacing::Initialize(REXCVAR_GET(framerate), REXCVAR_GET(frame_log) ? "frametimes.csv" : "");
     tabletennis::pacing::InstallPresentHook();
     tabletennis::intro::Install();

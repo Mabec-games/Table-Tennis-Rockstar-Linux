@@ -30,6 +30,11 @@ void SetUiActive(bool active);
 // Absolute-deadline limiter on a high-resolution timer.
 void BeforeSwap();
 
+// TT_LEGACY_PACING=1: BeforeSwap only measures and the startup dialog stays
+// attached, calling PaceLegacyPresent once per presented frame instead.
+bool Legacy();
+void PaceLegacyPresent();
+
 struct SeriesStats {
   float fps = 0.0f;     // Over the last ~2 seconds
   float avg_ms = 0.0f;  // Mean frame interval

@@ -11,6 +11,7 @@
 
 #include "frame_pacer.h"
 #include "frame_schedule.h"
+#include "pc_features.h"
 
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
@@ -365,10 +366,42 @@ void SetUiActive(bool active) {
   g_ui_active += active ? 1 : -1;
 }
 
+bool Legacy() {
+  static const bool legacy = tabletennis::pc::Diagnostic("TT_LEGACY_PACING");
+  return legacy;
+}
+
+void PaceLegacyPresent() {
+  // Linux v1.2 behaviour: hold the presenting thread to the frame-rate limit.
+  static auto last_draw = clock::now();
+  const auto target = std::chrono::nanoseconds(1'000'000'000LL / 60);
+  const auto elapsed = clock::now() - last_draw;
+  if (elapsed < target) {
+    const auto sleep = target - elapsed;
+    if (sleep > std::chrono::milliseconds(2)) {
+      const auto coarse = std::chrono::duration_cast<std::chrono::nanoseconds>(
+          sleep - std::chrono::milliseconds(1)).count();
+#if defined(_WIN32)
+      ::Sleep(DWORD(coarse / 1'000'000));
+#else
+      timespec req{static_cast<time_t>(coarse / 1'000'000'000LL), static_cast<long>(coarse % 1'000'000'000LL)};
+      nanosleep(&req, nullptr);
+#endif
+    }
+    while (clock::now() - last_draw < target) {
+#if defined(_M_X64) || defined(__x86_64__)
+      _mm_pause();
+#endif
+    }
+  }
+  last_draw = clock::now();
+}
+
 void BeforeSwap() {
   auto& s = State();
   const int32_t target_fps = g_target_fps;
-  if (target_fps > 0) {
+  // Legacy pacing still records frame times here; it only skips the wait.
+  if (target_fps > 0 && !Legacy()) {
     SleepUntil(s.timer, s.schedule.Next(NowNs(), target_fps));
   }
   // Recorded on release: this is when the frame is submitted.

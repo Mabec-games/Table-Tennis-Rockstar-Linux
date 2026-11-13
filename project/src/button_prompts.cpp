@@ -2,6 +2,7 @@
 
 #include "button_prompts.h"
 #include "button_texture_layout.h"
+#include "pc_features.h"
 
 #include <rex/cvar.h>
 #include <rex/system/interfaces/graphics.h>
@@ -306,6 +307,8 @@ void SetSetting(const std::string& value) {
 }
 
 void Update() {
+  static const bool disabled = tabletennis::pc::Diagnostic("TT_NO_PROMPTS");
+  if (disabled) return;
   {
     std::lock_guard follow_lock(g_follow_mutex);
     const auto setting=g_setting.load();

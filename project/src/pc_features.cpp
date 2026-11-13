@@ -31,6 +31,7 @@ std::atomic<uint64_t> surface{(uint64_t(1280)<<32)|720};
 std::mutex display_mutex;
 void ApplyDisplay() {
   std::lock_guard lock(display_mutex);
+  if (Diagnostic("TT_NO_ASPECT")) return;  // v1.2: 16:9 picture, SDK letterboxing untouched
   const auto size=surface.load();const bool match=gameplay.load();
   const auto mode=rex::cvar::GetFlagByName("display_aspect");
   aspect.store(layout::PictureAspect(uint32_t(size>>32),uint32_t(size),mode,match));

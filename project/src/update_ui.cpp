@@ -3,6 +3,7 @@
 #include "achievement_ui.h"
 #include "frame_pacer.h"
 #include "settings_store.h"
+#include "pc_features.h"
 #include "generated/default/tabletennis_init.h"
 #include <rex/filesystem.h>
 #include <rex/logging.h>
@@ -144,7 +145,7 @@ void Start(std::function<void(std::string)> callback) {
 #if defined(_WIN32)
   if(fields["check_updates"]!="false") Launch(L"--check-only");
 #else
-  if(fields["check_updates"]!="false") {
+  if(fields["check_updates"]!="false" && !tabletennis::pc::Diagnostic("TT_NO_UPDATE_CHECK")) {
     if (checker.joinable()) checker.join();
     checker = std::thread([folder, inst=installed]() {
       DoBackgroundCheck(folder, inst);
