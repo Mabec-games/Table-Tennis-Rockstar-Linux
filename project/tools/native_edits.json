@@ -227,9 +227,108 @@
     ]
   },
   {
+    "name": "sub_82143E98",
+    "input_sha256": "4022146431e60af77f90ab97a1d4da627987c461ad845cb13aa8c2e21c760f46",
+    "output_sha256": "7bbd9471647c95aaa45becacb91c5251404fe8ee285ad555c66645975015a20d",
+    "edits": [
+      {
+        "offset": 482,
+        "delete": 26,
+        "insert": "\tif (!ctx.cr6.eq) { ctx.f1.f64 = tabletennis::pc::CameraAspect(ctx.f1.f64); return; }\n"
+      },
+      {
+        "offset": 1755,
+        "delete": 9,
+        "insert": "\t{ ctx.f1.f64 = tabletennis::pc::CameraAspect(ctx.f1.f64); return; }\n"
+      },
+      {
+        "offset": 1911,
+        "delete": 9,
+        "insert": "\t{ ctx.f1.f64 = tabletennis::pc::CameraAspect(ctx.f1.f64); return; }\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_82160698",
+    "input_sha256": "81581643b9cefbc2fa5942b3dc540ddc0bcd316eab2aedbf0926c626e60b771c",
+    "output_sha256": "3aa8b62727740838cfd1456db13a5370d744b69ef66c01c4ff195d0aada2cd81",
+    "edits": [
+      {
+        "offset": 70,
+        "delete": 0,
+        "insert": "\t// PC PORT: runs once per frame while a match is being played (intro, serve,\n\t// points, transitions) and not in front-end menus (including the menu's\n\t// demo match), loading or pause: the \"in a match\" signal.\n\ttabletennis::pc::SetGameplay(true);\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_823537B0",
+    "input_sha256": "98d57f593de31e4f3077b677b4f97d84d2ab3f723bf471a173870313e36084d2",
+    "output_sha256": "f56c2dc8b16ae21f10acb948cf5e9e2dd5de753d9f31e5732f4942b05daa7a29",
+    "edits": [
+      {
+        "offset": 54,
+        "delete": 0,
+        "insert": "\ttabletennis::pc::Scissor(ctx);\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_8235B750",
+    "input_sha256": "5c515aa27019e10d6daa90871a5869490d555def8ac6085e028460e01893a858",
+    "output_sha256": "997f74fe1bf1a8b4ae8ac46807f8ecad9ca5aa4a60cb2289f9db3c172d24e576",
+    "edits": [
+      {
+        "offset": 70,
+        "delete": 0,
+        "insert": "\t// PC PORT: hold the frame to the pacing schedule before it is swapped and\n\t// kicked to the GPU, so frames reach the screen at fixed intervals.\n\ttabletennis::pacing::BeforeSwap();\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_823F9238",
+    "input_sha256": "c41cf76a54b5dc0040d4b5154896b5d7e8e763d4e19a14a60caeabadb6f1dd95",
+    "output_sha256": "c40ec7c3e1a27b70891d965812af28eec534eeb689cbfcbe067ada1a66e34df3",
+    "edits": [
+      {
+        "offset": 705,
+        "delete": 0,
+        "insert": "\ttabletennis::pc::CheckQuit(ctx, base, REX_LOAD_U32(0x82602814));\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_823F9CA8",
+    "input_sha256": "9a9d81411d52e7a429f6e259abeab4eab612e6fc6e37119c75d84c860e2c1b1a",
+    "output_sha256": "04f7e600c39877ac32beabd580e74dcefcdd7801376e4459dca6fb2546587b6c",
+    "edits": [
+      {
+        "offset": 3805,
+        "delete": 0,
+        "insert": "\ttabletennis::pc::FixUi(ctx, base, ctx.r1.u32 + 96, ctx.f12.f64);\n"
+      },
+      {
+        "offset": 3959,
+        "delete": 0,
+        "insert": "\ttabletennis::pc::EndUi(ctx, base);\n"
+      }
+    ]
+  },
+  {
+    "name": "sub_824830A8",
+    "input_sha256": "f451a3f40e1edf075b7174354e448e2cb7eef610e43c37ba4323020c946f0487",
+    "output_sha256": "03a9d8e9bcfbcc3ed1c4db6a36bb9ae5fc29bfc94cd00802934fa3c73461746d",
+    "edits": [
+      {
+        "offset": 448,
+        "delete": 33,
+        "insert": "\tctx.f10.f64 = tabletennis::pc::VideoAspect(double(temp.f32));\n"
+      }
+    ]
+  },
+  {
     "name": "tabletennis_pch.h",
     "input_sha256": "56eb9b49a565ca5acc8a6e6da556c0f1d55accc26f36dcf8698c1cc65e359af1",
-    "output_sha256": "53936e6d72a3cbbe87f3b8ead29d727fddaa80dae33ec77882c3670eb3547107",
+    "output_sha256": "fa068f90b3758a8e131ab39f87c7d97f57a7b13093555cec5cbd36e0b0607e8f",
     "edits": [
       {
         "offset": 13801,
@@ -250,6 +349,11 @@
         "offset": 15196,
         "delete": 93,
         "insert": ""
+      },
+      {
+        "offset": 18522,
+        "delete": 0,
+        "insert": "\n#include \"intro_skip.h\"\n#include \"frame_pacer.h\"\n#include \"pc_features.h\"\n\n"
       }
     ]
   }
