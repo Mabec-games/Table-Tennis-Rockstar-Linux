@@ -198,7 +198,7 @@ def main():
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
     window = tk.Tk()
-    window.title('Table Tennis for Linux, 1.3')
+    window.title('Table Tennis for Linux, 1.3.1')
     window.resizable(False, False)
     window.configure(background='#080d15')
     icon = tk.PhotoImage(file=str(Path(__file__).resolve().parent / 'assets/tux-icon.png'))

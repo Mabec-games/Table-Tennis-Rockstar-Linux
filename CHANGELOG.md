@@ -1,5 +1,21 @@
 # Changelog
 
+## Linux v1.3.1 — 2026-11-13
+
+- Steam Deck precaution for the v1.3 session crash and slowdown (issue #4): on
+  a Steam Deck, frame pacing, aspect handling, the achievement UI, the launch
+  update check and controller-type button icons return to v1.2 behaviour. Not a
+  confirmed fix. Each can be forced with `TT_LEGACY_PACING`, `TT_NO_ASPECT`,
+  `TT_NO_ACHIEVEMENT_UI`, `TT_NO_UPDATE_CHECK` or `TT_NO_PROMPTS` set to 0 or 1.
+- The game window shows the application icon on X11 desktops (issue #3).
+- Restored the ThisIsAkill/Table-Tennis-Linux notice, license and README credit
+  (issue #1).
+- Recorded the v1.3 native hooks in `native_edits.json` so source builds match
+  the release.
+
+See [the v1.3.1 notes](docs/RELEASE-LINUX-v1.3.1.md) and
+[the v1.3 notes](docs/RELEASE-LINUX-v1.3.md).
+
 ## Linux v1.2 — 2026-10-21
 
 Steam Deck / constrained RDNA 2 match-performance fix for the Mabec Games Linux

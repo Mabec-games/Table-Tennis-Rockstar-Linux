@@ -1,6 +1,6 @@
 ![Mabec Games — Table Tennis for Linux](docs/images/mabec.png)
 
-# Rockstar Games presents Table Tennis — Linux v1.3
+# Rockstar Games presents Table Tennis — Linux v1.3.1
 
 **Native Linux port by Mabec Games, forked from
 [davidptrssvea's Windows PC recompilation](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC).**
@@ -15,6 +15,18 @@ the runtime and renderer.
 started correctly with no issues reported.**
 
 > **Pressing Escape immediately quits the game, without a confirmation dialog.**
+
+## What's new in Linux v1.3.1
+
+- **Steam Deck precaution:** v1.3 could take down the Steam Deck session
+  ([issue #4](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/issues/4)).
+  The cause is not identified yet, so on a Steam Deck v1.3.1 returns frame
+  pacing, aspect handling, the achievement UI, the launch update check and
+  controller-type button icons to their v1.2 behaviour. This is a precaution,
+  not a confirmed fix. See the
+  [v1.3.1 notes](docs/RELEASE-LINUX-v1.3.1.md) for the switches.
+- **Game window icon** on X11 desktops.
+- **Credits** for code adapted from ThisIsAkill/Table-Tennis-Linux restored.
 
 ## What's new in Linux v1.3
 
@@ -82,8 +94,8 @@ Linux v1.3 brings a major feature synchronization with the upstream PC recompila
 
 ## Getting started
 
-**[Download the Linux v1.3 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.3/Table-Tennis-Linux-v1.3-x86_64.AppImage)**
-from the [Linux v1.3 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.3).
+**[Download the Linux v1.3.1 AppImage](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/download/linux-v1.3.1/Table-Tennis-Linux-v1.3.1-x86_64.AppImage)**
+from the [Linux v1.3.1 release](https://github.com/Mabec-games/Table-Tennis-Rockstar-Linux/releases/tag/linux-v1.3.1).
 The release also includes a SHA-256 checksum and source ZIP.
 
 **Players do not need to install the SDK, Python, Tk or a compiler.**
@@ -97,8 +109,8 @@ the ISO available: the game reads it during play.
 Make the downloaded AppImage executable and start it:
 
 ```bash
-chmod +x Table-Tennis-Linux-v1.3-x86_64.AppImage
-./Table-Tennis-Linux-v1.3-x86_64.AppImage
+chmod +x Table-Tennis-Linux-v1.3.1-x86_64.AppImage
+./Table-Tennis-Linux-v1.3.1-x86_64.AppImage
 ```
 
 Choose the ISO, set **800p (Steam Deck)** on Steam Deck or **1080p** on desktop
@@ -108,14 +120,14 @@ launcher settings are reused.
 If FUSE mounting is unavailable:
 
 ```bash
-./Table-Tennis-Linux-v1.3-x86_64.AppImage --appimage-extract-and-run
+./Table-Tennis-Linux-v1.3.1-x86_64.AppImage --appimage-extract-and-run
 ```
 
 On the tested hybrid laptop, the Radeon 680M worked through native Wayland but
 showed a black window through X11/XWayland. For that configuration:
 
 ```bash
-SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.3-x86_64.AppImage
+SDL_VIDEODRIVER=wayland ./Table-Tennis-Linux-v1.3.1-x86_64.AppImage
 ```
 
 This is a result from one laptop, not a requirement for all AMD systems.
