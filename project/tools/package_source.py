@@ -16,6 +16,7 @@ LINUX_FILES = {
     'docs/images/mabec.png', 'docs/images/SCREEN1.png', 'docs/images/TT_launcher.png',
     'docs/images/achievements.jpg',
     'licenses/LinuxArtwork/CREDITS.md',
+    'licenses/Table-Tennis-Linux/LICENSE.txt', 'licenses/Table-Tennis-Linux/NOTICE.txt',
     'project/launcher/launcher_linux.py', 'project/launcher/appimage_entry.py',
     'project/launcher/assets/launcher-panel.png',
     'project/launcher/assets/table-tennis-background.png',

@@ -167,6 +167,12 @@ environment variables override these defaults.
 
 - **Windows recompilation and original integration:** [davidptrssvea](https://github.com/davidptrssvea/Table-Tennis-Rockstar-PC).
   For the Windows version and installer, visit that upstream project.
+- **Achievements UI, online and System Link play, relay server
+  (`server/ttlink_server.py`), PlayStation button prompts, PC SETTINGS menu
+  and photo mode:** [ThisIsAkill/Table-Tennis-Linux](https://github.com/ThisIsAkill/Table-Tennis-Linux)
+  (MIT), adapted through the Windows project. Thanks to **ThisIsAkill**!
+  See the [notice](licenses/Table-Tennis-Linux/NOTICE.txt) and
+  [license](licenses/Table-Tennis-Linux/LICENSE.txt).
 - **Linux port, launcher presentation and testing:** Mabec Games.
 - **Recompilation framework and runtime:** [ReXGlue](https://github.com/rexglue/rexglue-sdk).
 - **Windowing, input and controller support:** SDL3.
@@ -181,7 +187,9 @@ environment variables override these defaults.
 
 Project-authored integration and tools retain the [MIT license](LICENSE).
 ReXGlue-derived files retain their [BSD notices](licenses/ReXGlue/LICENSE.txt);
-the [SDL notice](licenses/SDL3/LICENSE.txt) is also retained. Artwork and
+the [SDL notice](licenses/SDL3/LICENSE.txt) is also retained, as is the
+[MIT notice](licenses/Table-Tennis-Linux/NOTICE.txt) for code adapted from
+ThisIsAkill/Table-Tennis-Linux. Artwork and
 original game material are separate from the source-code license.
 
 This is an independent project, unaffiliated with Rockstar Games or Take-Two.
